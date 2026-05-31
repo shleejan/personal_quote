@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>THE DAILY DIALOGUE</title>
+
+<!-- dom-to-image-more -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
+<!-- 기본 내장 Google Fonts -->
+<link id="gf-link" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Black+Han+Sans&family=Gasoek+One&family=Hahmlet:wght@400;700;900&family=Gowun+Batang:wght@400;700&family=Sunflower:wght@300;500;700&family=Raleway:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap">
+
+<style>
+/* ═══════════════════════════════════════════
+   SYSTEM VARIABLES
+═══════════════════════════════════════════ */
+:root {
+  --ink: #0a0a0a;
+  --paper: #f5f0e8;
+  --rule: #1a1a1a;
+  --dim: #666;
+  --light: #dcdcdc;
+  --white: #ffffff;
+  --ui-bg: #111111;
+  --ui-border: #2a2a2a;
+  --ui-text: #e8e8e8;
+  --ui-accent: #c0392b;
+  --ui-hover: #1e1e1e;
+  --ui-active: #c0392b;
+  --ok: #27ae60;
+  --warn: #e67e22;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #0d0d0d;
+  color: var(--ink);
+  font-family: 'Noto Serif KR', serif;
+}
+
+/* ═══════════════════════════════════════════
+   TOPBAR — 편집 툴바
+═══════════════════════════════════════════ */
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: var(--ui-bg);
+  border-bottom: 1px solid var(--ui-border);
+  display: flex;
+  align-items: stretch;
+  height: 48px;
+  user-select: none;
+}
+
+.tb-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--ui-accent);
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--ui-border);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tb-divider {
+  width: 1px;
+  background: var(--ui-border);
+  margin: 8px 0;
+}
+
+.tb-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  border-right: 1px solid var(--ui-border);
+}
+
+.tb-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #555;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* 폰트 선택 드롭다운 */
+.tb-font-select {
+  background: var(--ui-hover);
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  font-size: 12px;
+  padding: 4px 8px;
+  height: 30px;
+  cursor: pointer;
+  min-width: 160px;
+  outline: none;
+  font-family: 'Noto Serif KR', serif;
+}
+.tb-font-select:focus { border-color: var(--ui-accent); }
+
+/* 툴바 버튼 */
+.tb-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ui-text);
+  font-size: 11px;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+  padding: 0 12px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.tb-btn:hover { background: var(--ui-hover); border-color: var(--ui-border); }
+.tb-btn.active, .tb-btn:active { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
+.tb-btn svg { width: 13px; height: 13px; fill: currentColor; }
+
+.tb-btn.primary {
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: #fff;
+  margin-left: 4px;
+}
+.tb-btn.primary:hover { background: #a93226; }
+
+.tb-spacer { flex: 1; }
+
+/* 선택된 요소 표시 */
+#selected-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #444;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--ui-border);
+  min-width: 120px;
+}
+#selected-label span {
+  color: var(--ui-accent);
+  margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR — 폰트 등록 패널
+═══════════════════════════════════════════ */
+#font-panel {
+  position: fixed;
+  top: 48px; right: 0; bottom: 0;
+  width: 300px;
+  background: var(--ui-bg);
+  border-left: 1px solid var(--ui-border);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+#font-panel.open { transform: translateX(0); }
+
+.fp-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--ui-border);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--ui-text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.fp-close {
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.fp-close:hover { color: var(--ui-text); }
+
+.fp-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+
+.fp-section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #555;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ui-border);
+}
+
+/* 방식 A: CSS 코드 붙여넣기 */
+.fp-textarea {
+  width: 100%;
+  background: #0a0a0a;
+  border: 1px solid var(--ui-border);
+  color: #a8d8a8;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  placeholder-color: #444;
+}
+.fp-textarea:focus { border-color: #444; }
+.fp-textarea::placeholder { color: #333; }
+
+/* 방식 B: 파일 업로드 */
+.fp-upload-zone {
+  border: 1px dashed var(--ui-border);
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.fp-upload-zone:hover { border-color: #555; background: #0a0a0a; }
+.fp-upload-zone.dragover { border-color: var(--ui-accent); background: rgba(192,57,43,0.05); }
+.fp-upload-icon { font-size: 20px; color: #444; }
+.fp-upload-text { font-size: 11px; color: #555; line-height: 1.5; }
+.fp-upload-text strong { color: #888; display: block; }
+
+/* 등록된 폰트 목록 */
+.fp-font-list { display: flex; flex-direction: column; gap: 6px; }
+.fp-font-item {
+  background: #0a0a0a;
+  border: 1px solid var(--ui-border);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.fp-font-name {
+  font-size: 12px;
+  color: var(--ui-text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fp-font-source {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 2px 5px;
+  flex-shrink: 0;
+}
+.fp-font-source.css { background: #2980b9; color: #fff; }
+.fp-font-source.file { background: var(--ok); color: #fff; }
+.fp-font-source.builtin { background: #444; color: #aaa; }
+.fp-font-del {
+  background: none;
+  border: none;
+  color: #444;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.fp-font-del:hover { color: var(--ui-accent); }
+
+.fp-apply-btn {
+  width: 100%;
+  background: #0a0a0a;
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.fp-apply-btn:hover { background: var(--ui-hover); border-color: #444; }
+.fp-apply-btn.accent { background: var(--ui-accent); border-color: var(--ui-accent); }
+.fp-apply-btn.accent:hover { background: #a93226; }
+
+.fp-status {
+  font-size: 11px;
+  padding: 6px 10px;
+  margin-top: 4px;
+  display: none;
+}
+.fp-status.ok { background: rgba(39,174,96,0.12); color: var(--ok); display: block; }
+.fp-status.err { background: rgba(192,57,43,0.12); color: var(--ui-accent); display: block; }
+
+/* ═══════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════ */
+#app {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 48px;
+  transition: padding-right 0.25s;
+}
+#app.panel-open { padding-right: 300px; }
+
+#canvas-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 20px 80px;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+}
+
+/* ═══════════════════════════════════════════
+   CAPTURE AREA — 신문 카드
+═══════════════════════════════════════════ */
+.capture-area {
+  background: var(--white);
+  width: 100%;
+  max-width: 480px;
+  min-height: 600px;
+  padding: 20px;
+  border: 2px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+  position: relative;
+}
+
+/* ─── contenteditable 공통 ─── */
+[contenteditable="true"] { outline: none; cursor: text; }
+[contenteditable="true"]:empty::before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* ─── 선택 하이라이트 ─── */
+.editable-target {
+  transition: outline 0.1s;
+  border-radius: 1px;
+}
+.editable-target:hover { outline: 1px dashed rgba(192,57,43,0.3); }
+.editable-target.selected { outline: 2px solid rgba(192,57,43,0.6) !important; }
+
+/* ─── 신문 헤더 ─── */
+.newspaper-header {
+  text-align: center;
+  border-bottom: 4px double var(--ink);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  font-family: 'Orbitron', sans-serif;
+}
+.newspaper-header h1 {
+  font-size: 28px;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.header-meta {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  letter-spacing: 1px;
+}
+
+/* ─── 캐릭터 카드 ─── */
+.char-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--rule);
+  color: var(--white);
+  padding: 10px;
+  margin: 0 0 15px;
+  width: 100%;
+}
+.char-card [contenteditable="true"]:empty::before { color: #aaaaaa; }
+
+.char-image-placeholder {
+  width: 56px;
+  height: 56px;
+  background-color: #2a2a2a;
+  border: 1px dashed #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: #666;
+  flex-shrink: 0;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+  overflow: hidden;
+  cursor: pointer;
+  background-size: cover;
+  background-position: center;
+  transition: border-color 0.2s;
+  position: relative;
+}
+.char-image-placeholder:hover { border-color: #888; }
+.char-image-placeholder:hover::after {
+  content: '↑';
+  position: absolute;
+  font-size: 18px;
+  color: rgba(255,255,255,0.7);
+}
+.char-image-placeholder.has-image::after { display: none; }
+.char-image-placeholder.has-image:hover::after {
+  content: '↻';
+  display: flex;
+  position: absolute;
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
+}
+
+.char-name {
+  font-size: 16px;
+  font-weight: 900;
+  border-bottom: 1px solid var(--white);
+  display: inline-block;
+  padding-bottom: 2px;
+  letter-spacing: 1px;
+}
+.char-info {
+  font-size: 11px;
+  margin-top: 5px;
+  color: #cccccc;
+}
+.char-card-bottom {
+  margin-top: auto;
+  margin-bottom: 0;
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.char-card-bottom figcaption { text-align: right; }
+
+/* ─── 대사 섹션 ─── */
+.dialogue-section {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.scene-group {
+  border: 1px solid var(--ink);
+  padding: 12px;
+  position: relative;
+}
+
+/* 씬 삭제 버튼 (캡처 시 숨김) */
+.scene-del-btn {
+  position: absolute;
+  top: 6px; right: 6px;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+.scene-group:hover .scene-del-btn { opacity: 1; }
+.scene-del-btn:hover { color: var(--ui-accent); }
+
+.scene-header {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--ink);
+  margin: 0 0 10px;
+  padding-bottom: 5px;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+
+.dialogue-block {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  position: relative;
+}
+.dialogue-block:last-of-type { margin-bottom: 0; }
+
+/* 대사 블록 삭제 버튼 */
+.dialogue-del-btn {
+  position: absolute;
+  right: -6px; top: 0;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  line-height: 1;
+}
+.dialogue-block:hover .dialogue-del-btn { opacity: 1; }
+.dialogue-del-btn:hover { color: var(--ui-accent); }
+
+.speaker-name {
+  font-size: 12px;
+  font-weight: 900;
+  background: #eeeeee;
+  color: var(--ink);
+  display: inline-block;
+  padding: 3px 6px;
+  margin-bottom: 5px;
+  max-width: fit-content;
+}
+.char-1-line, .char-2-line { text-align: left; align-self: flex-start; }
+.speaker-line {
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* + 대사 추가 버튼들 */
+.add-dialogue-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px dashed #ccc;
+  color: #aaa;
+  font-size: 11px;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+  transition: border-color 0.15s, color 0.15s;
+}
+.add-dialogue-btn:hover { border-color: #888; color: #666; }
+
+.add-scene-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: 1px dashed #bbb;
+  color: #999;
+  font-size: 11px;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 2px;
+  padding: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.add-scene-btn:hover { border-color: #777; color: #555; }
+
+/* ─── 푸터 ─── */
+.main-footer {
+  margin-top: 15px;
+  border-top: 1px solid var(--ink);
+  padding-top: 10px;
+  text-align: right;
+  font-size: 10px;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+.stamp-logo {
+  font-weight: 900;
+  font-size: 11px;
+  text-transform: uppercase;
+  border: 2px solid var(--ink);
+  padding: 4px;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════
+   캡처 모드 — UI 요소 숨김
+═══════════════════════════════════════════ */
+.capture-mode .scene-del-btn,
+.capture-mode .dialogue-del-btn,
+.capture-mode .add-dialogue-btn,
+.capture-mode .add-scene-btn,
+.capture-mode .char-image-placeholder:hover::after,
+.capture-mode [contenteditable="true"].selected { outline: none !important; }
+.capture-mode .editable-target:hover { outline: none; }
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 10px 20px;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#toast.ok { border-color: var(--ok); color: var(--ok); }
+#toast.err { border-color: var(--ui-accent); color: var(--ui-accent); }
+
+/* ─── scrollbar ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #2a2a2a; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     TOPBAR
+════════════════════════════════════════ -->
+<div id="topbar">
+  <div class="tb-logo">TDD</div>
+
+  <div class="tb-group">
+    <span class="tb-label">ELEMENT</span>
+    <select id="font-select" class="tb-font-select" title="선택한 요소의 폰트 변경">
+      <optgroup label="─ 요소를 선택하세요 ─">
+        <option value="" disabled selected>← 텍스트 클릭 후 선택</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <div class="tb-group">
+    <button class="tb-btn" id="btn-add-scene" title="씬 블록 추가">
+      <svg viewBox="0 0 16 16"><path d="M8 2v12M2 8h12"/></svg>
+      씬 추가
+    </button>
+  </div>
+
+  <div class="tb-group">
+    <button class="tb-btn" id="btn-save" title="localStorage에 저장">
+      <svg viewBox="0 0 16 16"><path d="M2 2h9l3 3v9H2V2zm4 11v-5h4v5M4 2v4h7V2"/></svg>
+      저장
+    </button>
+    <button class="tb-btn" id="btn-load" title="저장된 내용 불러오기">
+      <svg viewBox="0 0 16 16"><path d="M3 3h10v2H3zm0 4h10v2H3zm0 4h7v2H3z"/></svg>
+      불러오기
+    </button>
+    <button class="tb-btn" id="btn-reset" title="초기화">
+      <svg viewBox="0 0 16 16"><path d="M2 8a6 6 0 1 0 1.5-4M2 2v4h4"/></svg>
+      초기화
+    </button>
+  </div>
+
+  <div class="tb-spacer"></div>
+
+  <div class="tb-group" style="border-right:none;">
+    <button class="tb-btn" id="btn-font-panel" title="폰트 등록 패널 열기">
+      <svg viewBox="0 0 16 16"><path d="M3 12L6 2l3 10M4.5 8.5h3M11 4v8M9.5 4h3M9.5 12h3"/></svg>
+      폰트 등록
+    </button>
+    <button class="tb-btn primary" id="btn-download" title="PNG 이미지로 저장">
+      <svg viewBox="0 0 16 16"><path d="M8 2v8m0 0L5 7m3 3 3-3M2 13h12"/></svg>
+      저장 PNG
+    </button>
+  </div>
+
+  <div id="selected-label">SELECTED:<span id="selected-name">—</span></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     FONT PANEL
+════════════════════════════════════════ -->
+<div id="font-panel">
+  <div class="fp-header">
+    FONT REGISTRY
+    <button class="fp-close" id="fp-close-btn">×</button>
+  </div>
+
+  <div class="fp-body">
+
+    <!-- 방식 A: CSS 붙여넣기 -->
+    <div>
+      <div class="fp-section-title">METHOD A — CSS CODE PASTE</div>
+      <p style="font-size:11px; color:#555; margin-bottom:10px; line-height:1.6;">
+        눈누·Google Fonts 등에서 제공하는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@font-face</code> 또는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@import</code> 코드를 붙여넣으세요.
+      </p>
+      <textarea
+        id="css-input"
+        class="fp-textarea"
+        rows="5"
+        placeholder="@font-face {
+  font-family: '폰트이름';
+  src: url('https://...');
+}
+
+또는
+
+@import url('https://...');"
+      ></textarea>
+      <div id="css-status" class="fp-status"></div>
+      <button class="fp-apply-btn accent" id="css-apply-btn" style="margin-top:8px;">CSS 코드 적용 →</button>
+    </div>
+
+    <!-- 방식 B: 파일 업로드 -->
+    <div>
+      <div class="fp-section-title">METHOD B — LOCAL FONT FILE</div>
+      <p style="font-size:11px; color:#555; margin-bottom:10px; line-height:1.6;">
+        .ttf / .otf / .woff / .woff2 파일을 업로드하면 Base64로 변환되어 캡처 이미지에도 정확히 반영됩니다.
+      </p>
+      <div class="fp-upload-zone" id="font-dropzone">
+        <div class="fp-upload-icon">↑</div>
+        <div class="fp-upload-text">
+          <strong>클릭 또는 파일 드래그</strong>
+          .ttf · .otf · .woff · .woff2
+        </div>
+      </div>
+      <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" style="display:none;" multiple>
+      <div id="file-status" class="fp-status"></div>
+    </div>
+
+    <!-- 등록된 폰트 목록 -->
+    <div>
+      <div class="fp-section-title">REGISTERED FONTS</div>
+      <div class="fp-font-list" id="font-list">
+        <!-- JS로 채워짐 -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CANVAS AREA
+════════════════════════════════════════ -->
+<div id="app">
+<div id="canvas-area">
+
+<div class="capture-area" id="capture-area">
+
+  <!-- 헤더 -->
+  <header class="newspaper-header">
+    <h1 class="editable-target"
+        contenteditable="true"
+        data-placeholder="[영화/드라마 제목]"
+        data-label="제목"
+        style="font-family:'Orbitron',sans-serif;">BLADE RUNNER</h1>
+    <div class="header-meta">
+      <span class="editable-target"
+            contenteditable="true"
+            data-placeholder="FILE NO."
+            data-label="파일번호"
+            style="font-family:'Orbitron',sans-serif;">FILE NO. 001</span>
+      <span class="editable-target"
+            contenteditable="true"
+            data-placeholder="DIRECTED BY"
+            data-label="감독"
+            style="font-family:'Orbitron',sans-serif;">DIRECTED BY: RIDLEY SCOTT</span>
+    </div>
+  </header>
+
+  <!-- 상단 캐릭터 카드 -->
+  <figure class="char-card" id="char-top">
+    <div class="char-image-placeholder" data-char="top" title="클릭하여 이미지 업로드">PHOTO</div>
+    <figcaption>
+      <div class="char-name editable-target"
+           contenteditable="true"
+           data-placeholder="이름"
+           data-label="캐릭터1 이름"
+           style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
+      <div class="char-info editable-target"
+           contenteditable="true"
+           data-placeholder="신상정보"
+           data-label="캐릭터1 정보"
+           style="font-family:'Noto Serif KR',serif;">REPLICANT / NEXUS-6 / MALE</div>
+    </figcaption>
+  </figure>
+
+  <!-- 대사 섹션 -->
+  <section class="dialogue-section" id="dialogue-section">
+
+    <article class="scene-group">
+      <button class="scene-del-btn" title="씬 삭제">×</button>
+      <h2 class="scene-header editable-target"
+          contenteditable="true"
+          data-placeholder="[상황 제목]"
+          data-label="씬 제목"
+          style="font-family:'Orbitron',sans-serif;">TEARS IN RAIN</h2>
+
+      <div class="dialogue-block">
+        <button class="dialogue-del-btn" title="대사 삭제">×</button>
+        <div class="speaker-name char-1-line editable-target"
+             contenteditable="true"
+             data-placeholder="화자"
+             data-label="화자명"
+             style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
+        <div class="speaker-line char-1-line editable-target"
+             contenteditable="true"
+             data-placeholder="대사를 입력하세요"
+             data-label="대사"
+             style="font-family:'Noto Serif KR',serif;">I've seen things you people wouldn't believe... Attack ships on fire off the shoulder of Orion... I watched C-beams glitter in the dark near the Tannhäuser Gate.</div>
+      </div>
+
+      <div class="dialogue-block">
+        <button class="dialogue-del-btn" title="대사 삭제">×</button>
+        <div class="speaker-name char-2-line editable-target"
+             contenteditable="true"
+             data-placeholder="화자"
+             data-label="화자명"
+             style="font-family:'Orbitron',sans-serif;">RICK DECKARD</div>
+        <div class="speaker-line char-2-line editable-target"
+             contenteditable="true"
+             data-placeholder="대사를 입력하세요"
+             data-label="대사"
+             style="font-family:'Noto Serif KR',serif;">(Silent observation)</div>
+      </div>
+
+      <div class="dialogue-block">
+        <button class="dialogue-del-btn" title="대사 삭제">×</button>
+        <div class="speaker-name char-1-line editable-target"
+             contenteditable="true"
+             data-placeholder="화자"
+             data-label="화자명"
+             style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
+        <div class="speaker-line char-1-line editable-target"
+             contenteditable="true"
+             data-placeholder="대사를 입력하세요"
+             data-label="대사"
+             style="font-family:'Noto Serif KR',serif;">All those moments will be lost in time, like tears in rain... Time to die.</div>
+      </div>
+
+      <button class="add-dialogue-btn">＋ 대사 추가</button>
+    </article>
+
+  </section>
+
+  <!-- 씬 추가 버튼 -->
+  <button class="add-scene-btn" id="add-scene-btn-main">＋ 씬 블록 추가</button>
+
+  <!-- 하단 캐릭터 카드 -->
+  <figure class="char-card char-card-bottom" id="char-bottom" style="margin-top:15px;">
+    <div class="char-image-placeholder" data-char="bottom" title="클릭하여 이미지 업로드">PHOTO</div>
+    <figcaption>
+      <div class="char-name editable-target"
+           contenteditable="true"
+           data-placeholder="이름"
+           data-label="캐릭터2 이름"
+           style="font-family:'Orbitron',sans-serif;">RICK DECKARD</div>
+      <div class="char-info editable-target"
+           contenteditable="true"
+           data-placeholder="신상정보"
+           data-label="캐릭터2 정보"
+           style="font-family:'Noto Serif KR',serif;">BLADE RUNNER / LAPD / MALE</div>
+    </figcaption>
+  </figure>
+
+  <!-- 푸터 -->
+  <footer class="main-footer">
+    <div class="editable-target"
+         contenteditable="true"
+         data-placeholder="출처 정보 (개봉 연도, 원작 등)"
+         data-label="출처"
+         style="font-family:'Orbitron',sans-serif;">RELEASED IN 1982</div>
+    <div class="stamp-logo editable-target"
+         contenteditable="true"
+         data-placeholder="스탬프 텍스트"
+         data-label="스탬프"
+         style="font-family:'Orbitron',sans-serif;">THE DAILY DIALOGUE</div>
+  </footer>
+
+</div><!-- /capture-area -->
+</div><!-- /canvas-area -->
+</div><!-- /app -->
+
+<!-- 이미지 업로드 인풋들 -->
+<input type="file" id="img-input-top" accept="image/*" style="display:none;">
+<input type="file" id="img-input-bottom" accept="image/*" style="display:none;">
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+const state = {
+  selectedEl: null,
+  registeredFonts: [],   // { name, source:'css'|'file'|'builtin' }
+  isComposing: false
+};
+
+/* ════════════════════════════════════════
+   BUILT-IN GOOGLE FONTS
+════════════════════════════════════════ */
+const BUILTIN_FONTS = [
+  { name: 'Orbitron',        family: "'Orbitron', sans-serif" },
+  { name: 'Noto Serif KR',   family: "'Noto Serif KR', serif" },
+  { name: 'Noto Sans KR',    family: "'Noto Sans KR', sans-serif" },
+  { name: 'Black Han Sans',  family: "'Black Han Sans', sans-serif" },
+  { name: 'Gasoek One',      family: "'Gasoek One', sans-serif" },
+  { name: 'Hahmlet',         family: "'Hahmlet', serif" },
+  { name: 'Gowun Batang',    family: "'Gowun Batang', serif" },
+  { name: 'Sunflower',       family: "'Sunflower', sans-serif" },
+  { name: 'Raleway',         family: "'Raleway', sans-serif" },
+  { name: 'Playfair Display',family: "'Playfair Display', serif" },
+];
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+/* ════════════════════════════════════════
+   FONT SELECT — 드롭다운 빌드
+════════════════════════════════════════ */
+function buildFontSelect() {
+  const sel = document.getElementById('font-select');
+  const prev = sel.value;
+  sel.innerHTML = '';
+
+  // 플레이스홀더
+  const ph = document.createElement('option');
+  ph.value = ''; ph.disabled = true;
+  ph.textContent = state.selectedEl ? '폰트 선택...' : '← 텍스트 클릭 후 선택';
+  if (!state.selectedEl) ph.selected = true;
+  sel.appendChild(ph);
+
+  // 내장 폰트
+  const grp1 = document.createElement('optgroup');
+  grp1.label = '── 기본 Google Fonts';
+  BUILTIN_FONTS.forEach(f => {
+    const o = document.createElement('option');
+    o.value = f.family; o.textContent = f.name;
+    if (state.selectedEl && state.selectedEl.style.fontFamily === f.family) o.selected = true;
+    grp1.appendChild(o);
+  });
+  sel.appendChild(grp1);
+
+  // 등록된 사용자 폰트
+  const userFonts = state.registeredFonts;
+  if (userFonts.length > 0) {
+    const grp2 = document.createElement('optgroup');
+    grp2.label = '── 등록된 폰트';
+    userFonts.forEach(f => {
+      const o = document.createElement('option');
+      o.value = `'${f.name}', sans-serif`;
+      o.textContent = f.name + (f.source === 'file' ? ' ★' : '');
+      grp2.appendChild(o);
+    });
+    sel.appendChild(grp2);
+  }
+
+  if (prev) sel.value = prev;
+}
+
+/* ════════════════════════════════════════
+   ELEMENT SELECTION
+════════════════════════════════════════ */
+document.getElementById('capture-area').addEventListener('click', e => {
+  const target = e.target.closest('.editable-target');
+  if (!target) return;
+
+  // 이전 선택 해제
+  document.querySelectorAll('.editable-target.selected').forEach(el => el.classList.remove('selected'));
+
+  state.selectedEl = target;
+  target.classList.add('selected');
+
+  // 상태 표시
+  document.getElementById('selected-name').textContent = target.dataset.label || '요소';
+
+  // 드롭다운 현재 폰트로 맞춤
+  buildFontSelect();
+  const sel = document.getElementById('font-select');
+  const cur = target.style.fontFamily;
+  for (let o of sel.options) {
+    if (o.value === cur) { sel.value = o.value; break; }
+  }
+});
+
+// 바깥 클릭 시 선택 해제
+document.addEventListener('click', e => {
+  if (!e.target.closest('#capture-area') && !e.target.closest('#topbar')) {
+    document.querySelectorAll('.editable-target.selected').forEach(el => el.classList.remove('selected'));
+    state.selectedEl = null;
+    document.getElementById('selected-name').textContent = '—';
+    buildFontSelect();
+  }
+});
+
+/* ════════════════════════════════════════
+   FONT APPLY
+════════════════════════════════════════ */
+document.getElementById('font-select').addEventListener('change', e => {
+  if (!state.selectedEl || !e.target.value) return;
+  state.selectedEl.style.fontFamily = e.target.value;
+});
+
+/* ════════════════════════════════════════
+   IME 처리 (한국어)
+════════════════════════════════════════ */
+document.addEventListener('compositionstart', () => { state.isComposing = true; });
+document.addEventListener('compositionend', () => { state.isComposing = false; });
+
+/* ════════════════════════════════════════
+   CHARACTER IMAGE UPLOAD
+════════════════════════════════════════ */
+function setupCharImage(charKey, inputId) {
+  const input = document.getElementById(inputId);
+  document.querySelectorAll(`.char-image-placeholder[data-char="${charKey}"]`).forEach(ph => {
+    ph.addEventListener('click', () => input.click());
+  });
+  input.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.querySelectorAll(`.char-image-placeholder[data-char="${charKey}"]`).forEach(ph => {
+        ph.style.backgroundImage = `url('${ev.target.result}')`;
+        ph.style.backgroundSize = 'cover';
+        ph.style.backgroundPosition = 'center';
+        ph.textContent = '';
+        ph.classList.add('has-image');
+        ph.title = '클릭하여 이미지 교체';
+      });
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  });
+}
+setupCharImage('top', 'img-input-top');
+setupCharImage('bottom', 'img-input-bottom');
+
+/* ════════════════════════════════════════
+   DIALOGUE BLOCKS — 추가/삭제
+════════════════════════════════════════ */
+function makeDialogueBlock() {
+  const div = document.createElement('div');
+  div.className = 'dialogue-block';
+  div.innerHTML = `
+    <button class="dialogue-del-btn" title="대사 삭제">×</button>
+    <div class="speaker-name char-1-line editable-target"
+         contenteditable="true"
+         data-placeholder="화자"
+         data-label="화자명"
+         style="font-family:'Orbitron',sans-serif;"></div>
+    <div class="speaker-line char-1-line editable-target"
+         contenteditable="true"
+         data-placeholder="대사를 입력하세요"
+         data-label="대사"
+         style="font-family:'Noto Serif KR',serif;"></div>
+  `;
+  bindDialogueDelBtn(div.querySelector('.dialogue-del-btn'));
+  return div;
+}
+
+function bindDialogueDelBtn(btn) {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const block = btn.closest('.dialogue-block');
+    const scene = block.closest('.scene-group');
+    const blocks = scene.querySelectorAll('.dialogue-block');
+    if (blocks.length <= 1) { toast('최소 1개의 대사는 필요합니다', 'err'); return; }
+    block.remove();
+  });
+}
+
+function bindAddDialogueBtn(btn) {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const scene = btn.closest('.scene-group');
+    scene.insertBefore(makeDialogueBlock(), btn);
+  });
+}
+
+function makeSceneGroup() {
+  const art = document.createElement('article');
+  art.className = 'scene-group';
+  art.innerHTML = `
+    <button class="scene-del-btn" title="씬 삭제">×</button>
+    <h2 class="scene-header editable-target"
+        contenteditable="true"
+        data-placeholder="[상황 제목]"
+        data-label="씬 제목"
+        style="font-family:'Orbitron',sans-serif;"></h2>
+    <div class="dialogue-block">
+      <button class="dialogue-del-btn" title="대사 삭제">×</button>
+      <div class="speaker-name char-1-line editable-target"
+           contenteditable="true"
+           data-placeholder="화자"
+           data-label="화자명"
+           style="font-family:'Orbitron',sans-serif;"></div>
+      <div class="speaker-line char-1-line editable-target"
+           contenteditable="true"
+           data-placeholder="대사를 입력하세요"
+           data-label="대사"
+           style="font-family:'Noto Serif KR',serif;"></div>
+    </div>
+    <button class="add-dialogue-btn">＋ 대사 추가</button>
+  `;
+  bindSceneDelBtn(art.querySelector('.scene-del-btn'));
+  bindDialogueDelBtn(art.querySelector('.dialogue-del-btn'));
+  bindAddDialogueBtn(art.querySelector('.add-dialogue-btn'));
+  return art;
+}
+
+function bindSceneDelBtn(btn) {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const scenes = document.querySelectorAll('.scene-group');
+    if (scenes.length <= 1) { toast('최소 1개의 씬은 필요합니다', 'err'); return; }
+    btn.closest('.scene-group').remove();
+  });
+}
+
+function addScene() {
+  const section = document.getElementById('dialogue-section');
+  const addBtn = document.getElementById('add-scene-btn-main');
+  const scene = makeSceneGroup();
+  section.insertBefore(scene, addBtn);
+  scene.querySelector('[contenteditable]').focus();
+}
+
+// 초기 이벤트 바인딩
+document.querySelectorAll('.scene-del-btn').forEach(bindSceneDelBtn);
+document.querySelectorAll('.dialogue-del-btn').forEach(bindDialogueDelBtn);
+document.querySelectorAll('.add-dialogue-btn').forEach(bindAddDialogueBtn);
+document.getElementById('btn-add-scene').addEventListener('click', addScene);
+document.getElementById('add-scene-btn-main').addEventListener('click', addScene);
+
+/* ════════════════════════════════════════
+   FONT PANEL TOGGLE
+════════════════════════════════════════ */
+const fontPanel = document.getElementById('font-panel');
+const app = document.getElementById('app');
+
+document.getElementById('btn-font-panel').addEventListener('click', () => {
+  const open = fontPanel.classList.toggle('open');
+  app.classList.toggle('panel-open', open);
+  renderFontList();
+  buildFontSelect();
+});
+document.getElementById('fp-close-btn').addEventListener('click', () => {
+  fontPanel.classList.remove('open');
+  app.classList.remove('panel-open');
+});
+
+/* ════════════════════════════════════════
+   FONT REGISTRY — 방식 A (CSS 코드)
+════════════════════════════════════════ */
+document.getElementById('css-apply-btn').addEventListener('click', () => {
+  const css = document.getElementById('css-input').value.trim();
+  const statusEl = document.getElementById('css-status');
+  if (!css) {
+    statusEl.textContent = '코드를 입력해주세요.';
+    statusEl.className = 'fp-status err';
+    return;
+  }
+
+  // font-family 이름 추출 시도
+  const nameMatch = css.match(/font-family\s*:\s*['"]?([^'";,\n]+)['"]?/i);
+  // @import URL에서 이름 추출
+  const importMatch = css.match(/@import\s+url\(['"]?([^'")\n]+)['"]?\)/i);
+
+  let fontName = nameMatch ? nameMatch[1].trim() : null;
+
+  // @import 방식 처리
+  if (!fontName && importMatch) {
+    const urlStr = importMatch[1];
+    const familyMatch = urlStr.match(/family=([^&:]+)/);
+    if (familyMatch) {
+      fontName = decodeURIComponent(familyMatch[1].replace(/\+/g,' ')).split(':')[0].trim();
+    }
+  }
+
+  if (!fontName) {
+    statusEl.textContent = 'font-family 이름을 인식할 수 없습니다. CSS 코드를 확인해주세요.';
+    statusEl.className = 'fp-status err';
+    return;
+  }
+
+  // 중복 체크
+  if (state.registeredFonts.find(f => f.name === fontName)) {
+    statusEl.textContent = `'${fontName}'은(는) 이미 등록되어 있습니다.`;
+    statusEl.className = 'fp-status err';
+    return;
+  }
+
+  // <style> 태그로 삽입
+  const styleEl = document.createElement('style');
+  styleEl.textContent = css;
+  styleEl.dataset.fontName = fontName;
+  document.head.appendChild(styleEl);
+
+  state.registeredFonts.push({ name: fontName, source: 'css' });
+  renderFontList();
+  buildFontSelect();
+  document.getElementById('css-input').value = '';
+  statusEl.textContent = `✓ '${fontName}' 등록 완료! 폰트 선택 드롭다운에서 사용하세요.`;
+  statusEl.className = 'fp-status ok';
+  toast(`${fontName} 폰트 등록 완료`, 'ok');
+});
+
+/* ════════════════════════════════════════
+   FONT REGISTRY — 방식 B (로컬 파일)
+════════════════════════════════════════ */
+const fontDropzone = document.getElementById('font-dropzone');
+const fontFileInput = document.getElementById('font-file-input');
+
+fontDropzone.addEventListener('click', () => fontFileInput.click());
+fontDropzone.addEventListener('dragover', e => { e.preventDefault(); fontDropzone.classList.add('dragover'); });
+fontDropzone.addEventListener('dragleave', () => fontDropzone.classList.remove('dragover'));
+fontDropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  fontDropzone.classList.remove('dragover');
+  processLocalFontFiles(Array.from(e.dataTransfer.files));
+});
+fontFileInput.addEventListener('change', e => {
+  processLocalFontFiles(Array.from(e.target.files));
+  fontFileInput.value = '';
+});
+
+function processLocalFontFiles(files) {
+  const statusEl = document.getElementById('file-status');
+  const validExts = ['ttf','otf','woff','woff2'];
+  const valid = files.filter(f => validExts.some(ext => f.name.toLowerCase().endsWith('.' + ext)));
+
+  if (!valid.length) {
+    statusEl.textContent = '.ttf / .otf / .woff / .woff2 파일만 지원합니다.';
+    statusEl.className = 'fp-status err';
+    return;
+  }
+
+  let loaded = 0;
+  valid.forEach(file => {
+    // 파일명에서 폰트 이름 추출 (확장자 제거)
+    const fontName = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim();
+
+    if (state.registeredFonts.find(f => f.name === fontName)) {
+      statusEl.textContent = `'${fontName}'은(는) 이미 등록되어 있습니다.`;
+      statusEl.className = 'fp-status err';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const base64 = ev.target.result; // data:font/ttf;base64,...
+      const ext = file.name.split('.').pop().toLowerCase();
+      const mimeMap = { ttf:'font/truetype', otf:'font/opentype', woff:'font/woff', woff2:'font/woff2' };
+      const mime = mimeMap[ext] || 'font/truetype';
+
+      const styleEl = document.createElement('style');
+      styleEl.textContent = `
+        @font-face {
+          font-family: '${fontName}';
+          src: url('${base64}') format('${ext === 'ttf' ? 'truetype' : ext}');
+          font-weight: normal;
+          font-style: normal;
+        }
+      `;
+      styleEl.dataset.fontName = fontName;
+      document.head.appendChild(styleEl);
+
+      state.registeredFonts.push({ name: fontName, source: 'file' });
+      loaded++;
+      renderFontList();
+      buildFontSelect();
+
+      if (loaded === valid.length) {
+        statusEl.textContent = `✓ ${loaded}개 폰트 등록 완료! (Base64 임베드 — 캡처 품질 보장)`;
+        statusEl.className = 'fp-status ok';
+        toast(`${loaded}개 폰트 등록 완료`, 'ok');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ════════════════════════════════════════
+   FONT LIST RENDER
+════════════════════════════════════════ */
+function renderFontList() {
+  const list = document.getElementById('font-list');
+  list.innerHTML = '';
+
+  // 내장 폰트
+  BUILTIN_FONTS.forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'fp-font-item';
+    item.innerHTML = `
+      <span class="fp-font-name" style="font-family:${f.family}">${f.name}</span>
+      <span class="fp-font-source builtin">BUILT-IN</span>
+    `;
+    list.appendChild(item);
+  });
+
+  // 등록된 폰트
+  state.registeredFonts.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'fp-font-item';
+    item.innerHTML = `
+      <span class="fp-font-name" style="font-family:'${f.name}',sans-serif">${f.name}</span>
+      <span class="fp-font-source ${f.source}">${f.source.toUpperCase()}</span>
+      <button class="fp-font-del" data-index="${i}" title="등록 해제">×</button>
+    `;
+    list.appendChild(item);
+  });
+
+  // 삭제 버튼 이벤트
+  list.querySelectorAll('.fp-font-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.index);
+      const fontName = state.registeredFonts[idx].name;
+      // <style> 태그 제거
+      document.head.querySelectorAll(`style[data-font-name="${fontName}"]`).forEach(s => s.remove());
+      state.registeredFonts.splice(idx, 1);
+      renderFontList();
+      buildFontSelect();
+      toast(`${fontName} 폰트 해제`, '');
+    });
+  });
+}
+
+/* ════════════════════════════════════════
+   SAVE / LOAD — localStorage
+════════════════════════════════════════ */
+const STORAGE_KEY = 'tdd_v1';
+
+document.getElementById('btn-save').addEventListener('click', () => {
+  try {
+    const area = document.getElementById('capture-area');
+    // 버튼 등 UI 요소 제외하고 저장 (outerHTML 전체)
+    localStorage.setItem(STORAGE_KEY, area.innerHTML);
+    localStorage.setItem(STORAGE_KEY + '_fonts', JSON.stringify(state.registeredFonts));
+    toast('저장 완료', 'ok');
+  } catch(e) {
+    toast('저장 실패 (용량 초과일 수 있습니다)', 'err');
+  }
+});
+
+document.getElementById('btn-load').addEventListener('click', () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) { toast('저장된 내용이 없습니다', 'err'); return; }
+  if (!confirm('현재 작업 내용을 저장된 내용으로 교체합니다. 계속할까요?')) return;
+  document.getElementById('capture-area').innerHTML = saved;
+  rebindAll();
+  toast('불러오기 완료', 'ok');
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!confirm('모든 내용을 초기화합니다. 계속할까요?')) return;
+  location.reload();
+});
+
+/* ════════════════════════════════════════
+   불러오기 후 이벤트 재바인딩
+════════════════════════════════════════ */
+function rebindAll() {
+  document.querySelectorAll('.scene-del-btn').forEach(bindSceneDelBtn);
+  document.querySelectorAll('.dialogue-del-btn').forEach(bindDialogueDelBtn);
+  document.querySelectorAll('.add-dialogue-btn').forEach(bindAddDialogueBtn);
+  document.getElementById('add-scene-btn-main')?.addEventListener('click', addScene);
+  setupCharImage('top', 'img-input-top');
+  setupCharImage('bottom', 'img-input-bottom');
+}
+
+/* ════════════════════════════════════════
+   PNG DOWNLOAD
+════════════════════════════════════════ */
+document.getElementById('btn-download').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-download');
+  const area = document.getElementById('capture-area');
+
+  btn.textContent = '렌더링 중...';
+  btn.disabled = true;
+
+  try {
+    // 1. 선택 해제
+    document.querySelectorAll('.editable-target.selected').forEach(el => el.classList.remove('selected'));
+
+    // 2. 캡처 모드 적용 (UI 버튼 숨김)
+    area.classList.add('capture-mode');
+
+    // 3. 폰트 로딩 완료 대기
+    await document.fonts.ready;
+    // 추가 안전 딜레이 (웹폰트 렌더 완료)
+    await new Promise(r => setTimeout(r, 300));
+
+    // 4. 해상도 스케일
+    const scale = Math.max(window.devicePixelRatio, 2);
+    const w = area.offsetWidth;
+    const h = area.offsetHeight;
+
+    // 5. dom-to-image 캡처
+    const dataUrl = await domtoimage.toPng(area, {
+      width: w * scale,
+      height: h * scale,
+      style: {
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+        width: w + 'px',
+        height: h + 'px',
+      }
+    });
+
+    // 6. 다운로드
+    const title = area.querySelector('h1')?.textContent?.trim().replace(/\s+/g,'_') || 'daily-dialogue';
+    const a = document.createElement('a');
+    a.download = `${title}_dialogue.png`;
+    a.href = dataUrl;
+    a.click();
+
+    toast('이미지 저장 완료!', 'ok');
+  } catch(e) {
+    console.error(e);
+    toast('캡처 실패: ' + e.message, 'err');
+  } finally {
+    area.classList.remove('capture-mode');
+    btn.innerHTML = `<svg viewBox="0 0 16 16" style="width:13px;height:13px;fill:currentColor"><path d="M8 2v8m0 0L5 7m3 3 3-3M2 13h12"/></svg> 저장 PNG`;
+    btn.disabled = false;
+  }
+});
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+renderFontList();
+buildFontSelect();
+</script>
+</body>
+</html>

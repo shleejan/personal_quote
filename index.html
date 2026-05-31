@@ -603,16 +603,7 @@ html, body {
   display: inline-block;
 }
 
-/* ═══════════════════════════════════════════
-   캡처 모드 — UI 요소 숨김
-═══════════════════════════════════════════ */
-.capture-mode .scene-del-btn,
-.capture-mode .dialogue-del-btn,
-.capture-mode .add-dialogue-btn,
-.capture-mode .add-scene-btn,
-.capture-mode .char-image-placeholder:hover::after,
-.capture-mode [contenteditable="true"].selected { outline: none !important; }
-.capture-mode .editable-target:hover { outline: none; }
+
 
 /* ═══════════════════════════════════════════
    TOAST
@@ -1417,24 +1408,44 @@ document.getElementById('btn-download').addEventListener('click', async () => {
   btn.textContent = '렌더링 중...';
   btn.disabled = true;
 
+  // ── 캡처 전: 숨길 요소들을 직접 display:none 처리 ──
+  const hideSelectors = [
+    '.scene-del-btn',
+    '.dialogue-del-btn',
+    '.add-dialogue-btn',
+    '.add-scene-btn',
+  ];
+  const hiddenEls = [];
+  hideSelectors.forEach(sel => {
+    area.querySelectorAll(sel).forEach(el => {
+      hiddenEls.push({ el, prev: el.style.display });
+      el.style.display = 'none';
+    });
+  });
+
+  // 캐릭터 이미지 플레이스홀더: 이미지 없는 것만 숨김
+  area.querySelectorAll('.char-image-placeholder').forEach(el => {
+    if (!el.classList.contains('has-image')) {
+      hiddenEls.push({ el, prev: el.style.display });
+      el.style.display = 'none';
+    }
+  });
+
+  // contenteditable 선택 아웃라인 제거
+  const selectedEls = area.querySelectorAll('.editable-target.selected');
+  selectedEls.forEach(el => el.classList.remove('selected'));
+
   try {
-    // 1. 선택 해제
-    document.querySelectorAll('.editable-target.selected').forEach(el => el.classList.remove('selected'));
-
-    // 2. 캡처 모드 적용 (UI 버튼 숨김)
-    area.classList.add('capture-mode');
-
-    // 3. 폰트 로딩 완료 대기
+    // 폰트 로딩 완료 대기
     await document.fonts.ready;
-    // 추가 안전 딜레이 (웹폰트 렌더 완료)
     await new Promise(r => setTimeout(r, 300));
 
-    // 4. 해상도 스케일
+    // 해상도 스케일
     const scale = Math.max(window.devicePixelRatio, 2);
     const w = area.offsetWidth;
     const h = area.offsetHeight;
 
-    // 5. dom-to-image 캡처
+    // dom-to-image 캡처
     const dataUrl = await domtoimage.toPng(area, {
       width: w * scale,
       height: h * scale,
@@ -1446,7 +1457,7 @@ document.getElementById('btn-download').addEventListener('click', async () => {
       }
     });
 
-    // 6. 다운로드
+    // 다운로드
     const title = area.querySelector('h1')?.textContent?.trim().replace(/\s+/g,'_') || 'daily-dialogue';
     const a = document.createElement('a');
     a.download = `${title}_dialogue.png`;
@@ -1458,7 +1469,8 @@ document.getElementById('btn-download').addEventListener('click', async () => {
     console.error(e);
     toast('캡처 실패: ' + e.message, 'err');
   } finally {
-    area.classList.remove('capture-mode');
+    // ── 캡처 후: 숨긴 요소 모두 복원 ──
+    hiddenEls.forEach(({ el, prev }) => { el.style.display = prev; });
     btn.innerHTML = `<svg viewBox="0 0 16 16" style="width:13px;height:13px;fill:currentColor"><path d="M8 2v8m0 0L5 7m3 3 3-3M2 13h12"/></svg> 저장 PNG`;
     btn.disabled = false;
   }

@@ -414,12 +414,16 @@ html, body {
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.2s;
 }
+.char-image-placeholder * {
+  pointer-events: none;
+}
 .char-image-placeholder:hover { 
   border-color: #888; 
   background-color: #333;
 }
 .char-image-placeholder .material-icons {
   font-size: 32px;
+  color: #ffffff;
 }
 
 .char-name {
@@ -915,22 +919,23 @@ document.getElementById('font-select').addEventListener('change', e => {
 });
 
 /* ════════════════════════════════════════
-   ICON INSERTION
+   ICON INSERTION — 이벤트 위임 방식
+   cloneNode 없이 document 레벨에서 한 번만 등록
 ════════════════════════════════════════ */
 function setupIconInsertion() {
-  const placeholders = document.querySelectorAll('.char-image-placeholder');
-  placeholders.forEach(ph => {
-    // 기존 이벤트 리스너가 쌓이지 않도록 복제하여 교체
-    const newPh = ph.cloneNode(true);
-    ph.replaceWith(newPh);
-    newPh.addEventListener('click', () => {
-      state.targetIconPlaceholder = newPh;
-      document.getElementById('icon-name-input').value = '';
-      document.getElementById('icon-modal').classList.add('show');
-      document.getElementById('icon-name-input').focus();
-    });
-  });
+  // 아무것도 하지 않음 — 이벤트는 아래 위임 방식으로 처리
 }
+
+// capture-area 클릭 위임: .char-image-placeholder 클릭 감지
+document.getElementById('capture-area').addEventListener('click', e => {
+  const ph = e.target.closest('.char-image-placeholder');
+  if (!ph) return;
+  e.stopPropagation();
+  state.targetIconPlaceholder = ph;
+  document.getElementById('icon-name-input').value = '';
+  document.getElementById('icon-modal').classList.add('show');
+  document.getElementById('icon-name-input').focus();
+}, true); // capture phase로 등록해 다른 핸들러보다 먼저 실행
 
 document.getElementById('icon-cancel').addEventListener('click', () => {
   document.getElementById('icon-modal').classList.remove('show');

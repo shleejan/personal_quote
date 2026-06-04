@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
 
 <!-- 기본 내장 Google Fonts -->
-<link id="gf-link" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Black+Han+Sans&family=Gasoek+One&family=Hahmlet:wght@400;700;900&family=Gowun+Batang:wght@400;700&family=Sunflower:wght@300;500;700&family=Raleway:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap">
+<link id="gf-link" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Black+Han+Sans:wght@400&family=Gasoek+One:wght@400&family=Hahmlet:wght@300;400;500;600;700;800;900&family=Gowun+Batang:wght@400;700&family=Sunflower:wght@300;500;700&family=Raleway:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap">
 
 <style>
 /* ═══════════════════════════════════════════
@@ -411,7 +411,6 @@ html, body {
   width: 56px;
   height: 56px;
   background-color: #2a2a2a;
-  border: 1px dashed #555;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -710,7 +709,7 @@ html, body {
     <div>
       <div class="fp-section-title">METHOD A — CSS CODE PASTE</div>
       <p style="font-size:11px; color:#555; margin-bottom:10px; line-height:1.6;">
-        눈누·Google Fonts 등에서 제공하는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@font-face</code> 또는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@import</code> 코드를 붙여넣으세요.
+        눈누·Google Fonts 등에서 제공하는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@font-face</code> 또는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@import</code> 코드를 붙여넣으세요. 기존 Google Fonts는 자동 반영됩니다.
       </p>
       <textarea
         id="css-input"
@@ -825,7 +824,7 @@ html, body {
              contenteditable="true"
              data-placeholder="대사를 입력하세요"
              data-label="대사"
-             style="font-family:'Noto Serif KR',serif;">I've seen things you people wouldn't believe... Attack ships on fire off the shoulder of Orion... I watched C-beams glitter in the dark near the Tannhäuser Gate.</div>
+             style="font-family:'Noto Serif KR',serif;">I've seen things you people wouldn't believe... Attack ships on fire off the shoulder of Orion... I watched C-beams glitter in the dark near the Tannhäuser Gate... All those moments will be lost in time, like tears in rain... Time to die.</div>
       </div>
 
       <div class="dialogue-block">
@@ -1000,487 +999,366 @@ document.getElementById('capture-area').addEventListener('click', e => {
   state.selectedEl = target;
   target.classList.add('selected');
 
-  // 상태 표시
-  document.getElementById('selected-name').textContent = target.dataset.label || '요소';
-
-  // 드롭다운 현재 폰트로 맞춤
+  // 드롭다운 업데이트
   buildFontSelect();
-  const sel = document.getElementById('font-select');
-  const cur = target.style.fontFamily;
-  for (let o of sel.options) {
-    if (o.value === cur) { sel.value = o.value; break; }
-  }
-});
-
-// 바깥 클릭 시 선택 해제
-document.addEventListener('click', e => {
-  if (!e.target.closest('#capture-area') && !e.target.closest('#topbar')) {
-    document.querySelectorAll('.editable-target.selected').forEach(el => el.classList.remove('selected'));
-    state.selectedEl = null;
-    document.getElementById('selected-name').textContent = '—';
-    buildFontSelect();
-  }
+  updateSelectedLabel();
 });
 
 /* ════════════════════════════════════════
-   FONT APPLY
+   UPDATE SELECTED LABEL
+════════════════════════════════════════ */
+function updateSelectedLabel() {
+  const label = document.getElementById('selected-name');
+  if (!state.selectedEl) {
+    label.textContent = '—';
+  } else {
+    label.textContent = state.selectedEl.dataset.label || '—';
+  }
+}
+
+/* ════════════════════════════════════════
+   FONT CHANGE
 ════════════════════════════════════════ */
 document.getElementById('font-select').addEventListener('change', e => {
-  if (!state.selectedEl || !e.target.value) return;
+  if (!state.selectedEl) return;
   state.selectedEl.style.fontFamily = e.target.value;
 });
 
 /* ════════════════════════════════════════
-   IME 처리 (한국어)
-════════════════════════════════════════ */
-document.addEventListener('compositionstart', () => { state.isComposing = true; });
-document.addEventListener('compositionend', () => { state.isComposing = false; });
-
-/* ════════════════════════════════════════
    CHARACTER IMAGE UPLOAD
 ════════════════════════════════════════ */
-function setupCharImage(charKey, inputId) {
-  const input = document.getElementById(inputId);
-  document.querySelectorAll(`.char-image-placeholder[data-char="${charKey}"]`).forEach(ph => {
-    ph.addEventListener('click', () => input.click());
-  });
-  input.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      document.querySelectorAll(`.char-image-placeholder[data-char="${charKey}"]`).forEach(ph => {
-        ph.style.backgroundImage = `url('${ev.target.result}')`;
-        ph.style.backgroundSize = 'cover';
-        ph.style.backgroundPosition = 'center';
-        ph.textContent = '';
-        ph.classList.add('has-image');
-        ph.title = '클릭하여 이미지 교체';
-      });
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
-  });
-}
-setupCharImage('top', 'img-input-top');
-setupCharImage('bottom', 'img-input-bottom');
-
-/* ════════════════════════════════════════
-   DIALOGUE BLOCKS — 추가/삭제
-════════════════════════════════════════ */
-function makeDialogueBlock() {
-  const div = document.createElement('div');
-  div.className = 'dialogue-block';
-  div.innerHTML = `
-    <button class="dialogue-del-btn" title="대사 삭제">×</button>
-    <div class="speaker-name char-1-line editable-target"
-         contenteditable="true"
-         data-placeholder="화자"
-         data-label="화자명"
-         style="font-family:'Orbitron',sans-serif;"></div>
-    <div class="speaker-line char-1-line editable-target"
-         contenteditable="true"
-         data-placeholder="대사를 입력하세요"
-         data-label="대사"
-         style="font-family:'Noto Serif KR',serif;"></div>
-  `;
-  bindDialogueDelBtn(div.querySelector('.dialogue-del-btn'));
-  return div;
-}
-
-function bindDialogueDelBtn(btn) {
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const block = btn.closest('.dialogue-block');
-    const scene = block.closest('.scene-group');
-    const blocks = scene.querySelectorAll('.dialogue-block');
-    if (blocks.length <= 1) { toast('최소 1개의 대사는 필요합니다', 'err'); return; }
-    block.remove();
-  });
-}
-
-function bindAddDialogueBtn(btn) {
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const scene = btn.closest('.scene-group');
-    scene.insertBefore(makeDialogueBlock(), btn);
-  });
-}
-
-function makeSceneGroup() {
-  const art = document.createElement('article');
-  art.className = 'scene-group';
-  art.innerHTML = `
-    <button class="scene-del-btn" title="씬 삭제">×</button>
-    <h2 class="scene-header editable-target"
-        contenteditable="true"
-        data-placeholder="[상황 제목]"
-        data-label="씬 제목"
-        style="font-family:'Orbitron',sans-serif;"></h2>
-    <div class="dialogue-block">
-      <button class="dialogue-del-btn" title="대사 삭제">×</button>
-      <div class="speaker-name char-1-line editable-target"
-           contenteditable="true"
-           data-placeholder="화자"
-           data-label="화자명"
-           style="font-family:'Orbitron',sans-serif;"></div>
-      <div class="speaker-line char-1-line editable-target"
-           contenteditable="true"
-           data-placeholder="대사를 입력하세요"
-           data-label="대사"
-           style="font-family:'Noto Serif KR',serif;"></div>
-    </div>
-    <button class="add-dialogue-btn">＋ 대사 추가</button>
-  `;
-  bindSceneDelBtn(art.querySelector('.scene-del-btn'));
-  bindDialogueDelBtn(art.querySelector('.dialogue-del-btn'));
-  bindAddDialogueBtn(art.querySelector('.add-dialogue-btn'));
-  return art;
-}
-
-function bindSceneDelBtn(btn) {
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const scenes = document.querySelectorAll('.scene-group');
-    if (scenes.length <= 1) { toast('최소 1개의 씬은 필요합니다', 'err'); return; }
-    btn.closest('.scene-group').remove();
-  });
-}
-
-function addScene() {
-  const section = document.getElementById('dialogue-section');
-  const addBtn = document.getElementById('add-scene-btn-main');
-  const scene = makeSceneGroup();
-  section.insertBefore(scene, addBtn);
-  scene.querySelector('[contenteditable]').focus();
-}
-
-// 초기 이벤트 바인딩
-document.querySelectorAll('.scene-del-btn').forEach(bindSceneDelBtn);
-document.querySelectorAll('.dialogue-del-btn').forEach(bindDialogueDelBtn);
-document.querySelectorAll('.add-dialogue-btn').forEach(bindAddDialogueBtn);
-document.getElementById('btn-add-scene').addEventListener('click', addScene);
-document.getElementById('add-scene-btn-main').addEventListener('click', addScene);
-
-/* ════════════════════════════════════════
-   FONT PANEL TOGGLE
-════════════════════════════════════════ */
-const fontPanel = document.getElementById('font-panel');
-const app = document.getElementById('app');
-
-document.getElementById('btn-font-panel').addEventListener('click', () => {
-  const open = fontPanel.classList.toggle('open');
-  app.classList.toggle('panel-open', open);
-  renderFontList();
-  buildFontSelect();
-});
-document.getElementById('fp-close-btn').addEventListener('click', () => {
-  fontPanel.classList.remove('open');
-  app.classList.remove('panel-open');
-});
-
-/* ════════════════════════════════════════
-   FONT REGISTRY — 방식 A (CSS 코드)
-════════════════════════════════════════ */
-document.getElementById('css-apply-btn').addEventListener('click', () => {
-  const css = document.getElementById('css-input').value.trim();
-  const statusEl = document.getElementById('css-status');
-  if (!css) {
-    statusEl.textContent = '코드를 입력해주세요.';
-    statusEl.className = 'fp-status err';
-    return;
-  }
-
-  // font-family 이름 추출 시도
-  const nameMatch = css.match(/font-family\s*:\s*['"]?([^'";,\n]+)['"]?/i);
-  // @import URL에서 이름 추출
-  const importMatch = css.match(/@import\s+url\(['"]?([^'")\n]+)['"]?\)/i);
-
-  let fontName = nameMatch ? nameMatch[1].trim() : null;
-
-  // @import 방식 처리
-  if (!fontName && importMatch) {
-    const urlStr = importMatch[1];
-    const familyMatch = urlStr.match(/family=([^&:]+)/);
-    if (familyMatch) {
-      fontName = decodeURIComponent(familyMatch[1].replace(/\+/g,' ')).split(':')[0].trim();
-    }
-  }
-
-  if (!fontName) {
-    statusEl.textContent = 'font-family 이름을 인식할 수 없습니다. CSS 코드를 확인해주세요.';
-    statusEl.className = 'fp-status err';
-    return;
-  }
-
-  // 중복 체크
-  if (state.registeredFonts.find(f => f.name === fontName)) {
-    statusEl.textContent = `'${fontName}'은(는) 이미 등록되어 있습니다.`;
-    statusEl.className = 'fp-status err';
-    return;
-  }
-
-  // <style> 태그로 삽입
-  const styleEl = document.createElement('style');
-  styleEl.textContent = css;
-  styleEl.dataset.fontName = fontName;
-  document.head.appendChild(styleEl);
-
-  state.registeredFonts.push({ name: fontName, source: 'css' });
-  renderFontList();
-  buildFontSelect();
-  document.getElementById('css-input').value = '';
-  statusEl.textContent = `✓ '${fontName}' 등록 완료! 폰트 선택 드롭다운에서 사용하세요.`;
-  statusEl.className = 'fp-status ok';
-  toast(`${fontName} 폰트 등록 완료`, 'ok');
-});
-
-/* ════════════════════════════════════════
-   FONT REGISTRY — 방식 B (로컬 파일)
-════════════════════════════════════════ */
-const fontDropzone = document.getElementById('font-dropzone');
-const fontFileInput = document.getElementById('font-file-input');
-
-fontDropzone.addEventListener('click', () => fontFileInput.click());
-fontDropzone.addEventListener('dragover', e => { e.preventDefault(); fontDropzone.classList.add('dragover'); });
-fontDropzone.addEventListener('dragleave', () => fontDropzone.classList.remove('dragover'));
-fontDropzone.addEventListener('drop', e => {
-  e.preventDefault();
-  fontDropzone.classList.remove('dragover');
-  processLocalFontFiles(Array.from(e.dataTransfer.files));
-});
-fontFileInput.addEventListener('change', e => {
-  processLocalFontFiles(Array.from(e.target.files));
-  fontFileInput.value = '';
-});
-
-function processLocalFontFiles(files) {
-  const statusEl = document.getElementById('file-status');
-  const validExts = ['ttf','otf','woff','woff2'];
-  const valid = files.filter(f => validExts.some(ext => f.name.toLowerCase().endsWith('.' + ext)));
-
-  if (!valid.length) {
-    statusEl.textContent = '.ttf / .otf / .woff / .woff2 파일만 지원합니다.';
-    statusEl.className = 'fp-status err';
-    return;
-  }
-
-  let loaded = 0;
-  valid.forEach(file => {
-    // 파일명에서 폰트 이름 추출 (확장자 제거)
-    const fontName = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim();
-
-    if (state.registeredFonts.find(f => f.name === fontName)) {
-      statusEl.textContent = `'${fontName}'은(는) 이미 등록되어 있습니다.`;
-      statusEl.className = 'fp-status err';
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const base64 = ev.target.result; // data:font/ttf;base64,...
-      const ext = file.name.split('.').pop().toLowerCase();
-      const mimeMap = { ttf:'font/truetype', otf:'font/opentype', woff:'font/woff', woff2:'font/woff2' };
-      const mime = mimeMap[ext] || 'font/truetype';
-
-      const styleEl = document.createElement('style');
-      styleEl.textContent = `
-        @font-face {
-          font-family: '${fontName}';
-          src: url('${base64}') format('${ext === 'ttf' ? 'truetype' : ext}');
-          font-weight: normal;
-          font-style: normal;
-        }
-      `;
-      styleEl.dataset.fontName = fontName;
-      document.head.appendChild(styleEl);
-
-      state.registeredFonts.push({ name: fontName, source: 'file' });
-      loaded++;
-      renderFontList();
-      buildFontSelect();
-
-      if (loaded === valid.length) {
-        statusEl.textContent = `✓ ${loaded}개 폰트 등록 완료! (Base64 임베드 — 캡처 품질 보장)`;
-        statusEl.className = 'fp-status ok';
-        toast(`${loaded}개 폰트 등록 완료`, 'ok');
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-/* ════════════════════════════════════════
-   FONT LIST RENDER
-════════════════════════════════════════ */
-function renderFontList() {
-  const list = document.getElementById('font-list');
-  list.innerHTML = '';
-
-  // 내장 폰트
-  BUILTIN_FONTS.forEach(f => {
-    const item = document.createElement('div');
-    item.className = 'fp-font-item';
-    item.innerHTML = `
-      <span class="fp-font-name" style="font-family:${f.family}">${f.name}</span>
-      <span class="fp-font-source builtin">BUILT-IN</span>
-    `;
-    list.appendChild(item);
+function setupImageUpload() {
+  const placeholders = document.querySelectorAll('.char-image-placeholder');
+  
+  placeholders.forEach(ph => {
+    ph.addEventListener('click', () => {
+      const char = ph.dataset.char;
+      const inputId = `img-input-${char}`;
+      document.getElementById(inputId).click();
+    });
   });
 
-  // 등록된 폰트
-  state.registeredFonts.forEach((f, i) => {
-    const item = document.createElement('div');
-    item.className = 'fp-font-item';
-    item.innerHTML = `
-      <span class="fp-font-name" style="font-family:'${f.name}',sans-serif">${f.name}</span>
-      <span class="fp-font-source ${f.source}">${f.source.toUpperCase()}</span>
-      <button class="fp-font-del" data-index="${i}" title="등록 해제">×</button>
-    `;
-    list.appendChild(item);
-  });
-
-  // 삭제 버튼 이벤트
-  list.querySelectorAll('.fp-font-del').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.index);
-      const fontName = state.registeredFonts[idx].name;
-      // <style> 태그 제거
-      document.head.querySelectorAll(`style[data-font-name="${fontName}"]`).forEach(s => s.remove());
-      state.registeredFonts.splice(idx, 1);
-      renderFontList();
-      buildFontSelect();
-      toast(`${fontName} 폰트 해제`, '');
+  ['top', 'bottom'].forEach(char => {
+    document.getElementById(`img-input-${char}`).addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const dataUrl = evt.target.result;
+        const placeholder = document.querySelector(`.char-image-placeholder[data-char="${char}"]`);
+        placeholder.style.backgroundImage = `url('${dataUrl}')`;
+        placeholder.classList.add('has-image');
+        placeholder.textContent = '';
+      };
+      reader.readAsDataURL(file);
     });
   });
 }
 
 /* ════════════════════════════════════════
-   SAVE / LOAD — localStorage
+   ADD SCENE
 ════════════════════════════════════════ */
-const STORAGE_KEY = 'tdd_v1';
+function createSceneBlock() {
+  const template = `
+    <article class="scene-group">
+      <button class="scene-del-btn" title="씬 삭제">×</button>
+      <h2 class="scene-header editable-target"
+          contenteditable="true"
+          data-placeholder="[상황 제목]"
+          data-label="씬 제목"
+          style="font-family:'Orbitron',sans-serif;">NEW SCENE</h2>
+
+      <div class="dialogue-block">
+        <button class="dialogue-del-btn" title="대사 삭제">×</button>
+        <div class="speaker-name char-1-line editable-target"
+             contenteditable="true"
+             data-placeholder="화자"
+             data-label="화자명"
+             style="font-family:'Orbitron',sans-serif;">SPEAKER 1</div>
+        <div class="speaker-line char-1-line editable-target"
+             contenteditable="true"
+             data-placeholder="대사를 입력하세요"
+             data-label="대사"
+             style="font-family:'Noto Serif KR',serif;">대사를 입력하세요</div>
+      </div>
+
+      <button class="add-dialogue-btn">＋ 대사 추가</button>
+    </article>
+  `;
+  
+  const section = document.getElementById('dialogue-section');
+  const div = document.createElement('div');
+  div.innerHTML = template;
+  section.appendChild(div.firstElementChild);
+  
+  attachEventListeners();
+}
+
+/* ════════════════════════════════════════
+   ADD DIALOGUE
+════════════════════════════════════════ */
+function attachEventListeners() {
+  // 씬 삭제 버튼
+  document.querySelectorAll('.scene-del-btn').forEach(btn => {
+    btn.replaceWith(btn.cloneNode(true));
+  });
+  document.querySelectorAll('.scene-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.scene-group').remove();
+    });
+  });
+
+  // 대사 추가 버튼
+  document.querySelectorAll('.add-dialogue-btn').forEach(btn => {
+    btn.replaceWith(btn.cloneNode(true));
+  });
+  document.querySelectorAll('.add-dialogue-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const sceneGroup = btn.closest('.scene-group');
+      const newDialogue = `
+        <div class="dialogue-block">
+          <button class="dialogue-del-btn" title="대사 삭제">×</button>
+          <div class="speaker-name char-1-line editable-target"
+               contenteditable="true"
+               data-placeholder="화자"
+               data-label="화자명"
+               style="font-family:'Orbitron',sans-serif;">NEW SPEAKER</div>
+          <div class="speaker-line char-1-line editable-target"
+               contenteditable="true"
+               data-placeholder="대사를 입력하세요"
+               data-label="대사"
+               style="font-family:'Noto Serif KR',serif;">새 대사</div>
+        </div>
+      `;
+      const div = document.createElement('div');
+      div.innerHTML = newDialogue;
+      sceneGroup.insertBefore(div.firstElementChild, btn);
+      attachEventListeners();
+    });
+  });
+
+  // 대사 삭제 버튼
+  document.querySelectorAll('.dialogue-del-btn').forEach(btn => {
+    btn.replaceWith(btn.cloneNode(true));
+  });
+  document.querySelectorAll('.dialogue-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.dialogue-block').remove();
+    });
+  });
+}
+
+/* ════════════════════════════════════════
+   TOPBAR BUTTONS
+════════════════════════════════════════ */
+document.getElementById('btn-add-scene').addEventListener('click', createSceneBlock);
 
 document.getElementById('btn-save').addEventListener('click', () => {
-  try {
-    const area = document.getElementById('capture-area');
-    // 버튼 등 UI 요소 제외하고 저장 (outerHTML 전체)
-    localStorage.setItem(STORAGE_KEY, area.innerHTML);
-    localStorage.setItem(STORAGE_KEY + '_fonts', JSON.stringify(state.registeredFonts));
-    toast('저장 완료', 'ok');
-  } catch(e) {
-    toast('저장 실패 (용량 초과일 수 있습니다)', 'err');
-  }
+  const captureArea = document.getElementById('capture-area');
+  const html = captureArea.innerHTML;
+  localStorage.setItem('dialogue-content', html);
+  toast('저장했습니다', 'ok');
 });
 
 document.getElementById('btn-load').addEventListener('click', () => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) { toast('저장된 내용이 없습니다', 'err'); return; }
-  if (!confirm('현재 작업 내용을 저장된 내용으로 교체합니다. 계속할까요?')) return;
-  document.getElementById('capture-area').innerHTML = saved;
-  rebindAll();
-  toast('불러오기 완료', 'ok');
+  const html = localStorage.getItem('dialogue-content');
+  if (!html) {
+    toast('저장된 내용이 없습니다', 'err');
+    return;
+  }
+  document.getElementById('capture-area').innerHTML = html;
+  attachEventListeners();
+  setupImageUpload();
+  toast('불러왔습니다', 'ok');
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-  if (!confirm('모든 내용을 초기화합니다. 계속할까요?')) return;
-  location.reload();
-});
-
-/* ════════════════════════════════════════
-   불러오기 후 이벤트 재바인딩
-════════════════════════════════════════ */
-function rebindAll() {
-  document.querySelectorAll('.scene-del-btn').forEach(bindSceneDelBtn);
-  document.querySelectorAll('.dialogue-del-btn').forEach(bindDialogueDelBtn);
-  document.querySelectorAll('.add-dialogue-btn').forEach(bindAddDialogueBtn);
-  document.getElementById('add-scene-btn-main')?.addEventListener('click', addScene);
-  setupCharImage('top', 'img-input-top');
-  setupCharImage('bottom', 'img-input-bottom');
-}
-
-/* ════════════════════════════════════════
-   PNG DOWNLOAD
-════════════════════════════════════════ */
-document.getElementById('btn-download').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-download');
-  const area = document.getElementById('capture-area');
-
-  btn.textContent = '렌더링 중...';
-  btn.disabled = true;
-
-  // ── 캡처 전: 숨길 요소들을 직접 display:none 처리 ──
-  const hideSelectors = [
-    '.scene-del-btn',
-    '.dialogue-del-btn',
-    '.add-dialogue-btn',
-    '.add-scene-btn',
-  ];
-  const hiddenEls = [];
-  hideSelectors.forEach(sel => {
-    area.querySelectorAll(sel).forEach(el => {
-      hiddenEls.push({ el, prev: el.style.display });
-      el.style.display = 'none';
-    });
-  });
-
-  // 캐릭터 이미지 플레이스홀더: 이미지 없는 것만 숨김
-  area.querySelectorAll('.char-image-placeholder').forEach(el => {
-    if (!el.classList.contains('has-image')) {
-      hiddenEls.push({ el, prev: el.style.display });
-      el.style.display = 'none';
-    }
-  });
-
-  // contenteditable 선택 아웃라인 제거
-  const selectedEls = area.querySelectorAll('.editable-target.selected');
-  selectedEls.forEach(el => el.classList.remove('selected'));
-
-  try {
-    // 폰트 로딩 완료 대기
-    await document.fonts.ready;
-    await new Promise(r => setTimeout(r, 300));
-
-    // 해상도 스케일
-    const scale = Math.max(window.devicePixelRatio, 2);
-    const w = area.offsetWidth;
-    const h = area.offsetHeight;
-
-    // dom-to-image 캡처
-    const dataUrl = await domtoimage.toPng(area, {
-      width: w * scale,
-      height: h * scale,
-      style: {
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
-        width: w + 'px',
-        height: h + 'px',
-      }
-    });
-
-    // 다운로드
-    const title = area.querySelector('h1')?.textContent?.trim().replace(/\s+/g,'_') || 'daily-dialogue';
-    const a = document.createElement('a');
-    a.download = `${title}_dialogue.png`;
-    a.href = dataUrl;
-    a.click();
-
-    toast('이미지 저장 완료!', 'ok');
-  } catch(e) {
-    console.error(e);
-    toast('캡처 실패: ' + e.message, 'err');
-  } finally {
-    // ── 캡처 후: 숨긴 요소 모두 복원 ──
-    hiddenEls.forEach(({ el, prev }) => { el.style.display = prev; });
-    btn.innerHTML = `<svg viewBox="0 0 16 16" style="width:13px;height:13px;fill:currentColor"><path d="M8 2v8m0 0L5 7m3 3 3-3M2 13h12"/></svg> 저장 PNG`;
-    btn.disabled = false;
+  if (confirm('정말 초기화하시겠습니까?')) {
+    location.reload();
   }
 });
 
+document.getElementById('btn-font-panel').addEventListener('click', () => {
+  const panel = document.getElementById('font-panel');
+  panel.classList.toggle('open');
+  document.getElementById('app').classList.toggle('panel-open');
+});
+
+document.getElementById('fp-close-btn').addEventListener('click', () => {
+  document.getElementById('font-panel').classList.remove('open');
+  document.getElementById('app').classList.remove('panel-open');
+});
+
 /* ════════════════════════════════════════
-   INIT
+   FONT PANEL — CSS CODE PASTE
 ════════════════════════════════════════ */
-renderFontList();
+document.getElementById('css-apply-btn').addEventListener('click', () => {
+  const code = document.getElementById('css-input').value.trim();
+  if (!code) {
+    document.getElementById('css-status').textContent = '코드를 입력하세요';
+    document.getElementById('css-status').className = 'fp-status err';
+    return;
+  }
+
+  const styleEl = document.createElement('style');
+  styleEl.textContent = code;
+  document.head.appendChild(styleEl);
+
+  // 폰트명 추출
+  const fontMatches = code.match(/font-family\s*:\s*['"](.*?)['"]/gi);
+  if (fontMatches) {
+    fontMatches.forEach(match => {
+      const name = match.match(/['"](.*?)['"]/)[1];
+      if (!state.registeredFonts.some(f => f.name === name)) {
+        state.registeredFonts.push({ name, source: 'css' });
+      }
+    });
+  }
+
+  buildFontSelect();
+  updateFontList();
+
+  document.getElementById('css-status').textContent = '✓ CSS 코드가 적용되었습니다';
+  document.getElementById('css-status').className = 'fp-status ok';
+  document.getElementById('css-input').value = '';
+
+  setTimeout(() => {
+    document.getElementById('css-status').className = 'fp-status';
+  }, 3000);
+});
+
+/* ════════════════════════════════════════
+   FONT PANEL — FILE UPLOAD
+════════════════════════════════════════ */
+const dropzone = document.getElementById('font-dropzone');
+dropzone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropzone.classList.add('dragover');
+});
+dropzone.addEventListener('dragleave', () => {
+  dropzone.classList.remove('dragover');
+});
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  handleFontFiles(e.dataTransfer.files);
+});
+dropzone.addEventListener('click', () => {
+  document.getElementById('font-file-input').click();
+});
+
+document.getElementById('font-file-input').addEventListener('change', e => {
+  handleFontFiles(e.target.files);
+});
+
+function handleFontFiles(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const dataUrl = evt.target.result;
+      const name = file.name.replace(/\.[^/.]+$/, '');
+      
+      const fontFace = `@font-face {
+  font-family: '${name}';
+  src: url('${dataUrl}') format('${getFormat(file.name)}');
+  font-display: swap;
+}`;
+      
+      const styleEl = document.createElement('style');
+      styleEl.textContent = fontFace;
+      document.head.appendChild(styleEl);
+
+      if (!state.registeredFonts.some(f => f.name === name)) {
+        state.registeredFonts.push({ name, source: 'file' });
+      }
+
+      buildFontSelect();
+      updateFontList();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('file-status').textContent = `✓ ${files.length}개 파일 로드됨`;
+  document.getElementById('file-status').className = 'fp-status ok';
+  setTimeout(() => {
+    document.getElementById('file-status').className = 'fp-status';
+  }, 3000);
+}
+
+function getFormat(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const formats = { ttf: 'truetype', otf: 'opentype', woff: 'woff', woff2: 'woff2' };
+  return formats[ext] || 'truetype';
+}
+
+/* ════════════════════════════════════════
+   FONT PANEL — FONT LIST
+════════════════════════════════════════ */
+function updateFontList() {
+  const list = document.getElementById('font-list');
+  list.innerHTML = '';
+
+  state.registeredFonts.forEach(font => {
+    const item = document.createElement('div');
+    item.className = 'fp-font-item';
+    item.innerHTML = `
+      <span class="fp-font-name">${font.name}</span>
+      <span class="fp-font-source ${font.source}">${font.source.toUpperCase()}</span>
+      <button class="fp-font-del" title="삭제">×</button>
+    `;
+    list.appendChild(item);
+
+    item.querySelector('.fp-font-del').addEventListener('click', () => {
+      state.registeredFonts = state.registeredFonts.filter(f => f.name !== font.name);
+      updateFontList();
+      buildFontSelect();
+    });
+  });
+}
+
+/* ════════════════════════════════════════
+   DOWNLOAD PNG
+════════════════════════════════════════ */
+document.getElementById('btn-download').addEventListener('click', () => {
+  const captureArea = document.getElementById('capture-area');
+  
+  // 네비게이션 UI 숨김
+  document.querySelectorAll('.editable-target').forEach(el => {
+    el.classList.remove('selected');
+  });
+  document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  domtoimage.toPng(captureArea)
+    .then(image => {
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = `dialogue-${Date.now()}.png`;
+      link.click();
+      toast('다운로드되었습니다', 'ok');
+    })
+    .catch(err => {
+      console.error(err);
+      toast('다운로드 실패', 'err');
+    })
+    .finally(() => {
+      // 네비게이션 UI 복원
+      document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => {
+        el.style.display = '';
+      });
+    });
+});
+
+/* ════════════════════════════════════════
+   COMPOSITION
+════════════════════════════════════════ */
+setupImageUpload();
+attachEventListeners();
 buildFontSelect();
 </script>
+
 </body>
 </html>

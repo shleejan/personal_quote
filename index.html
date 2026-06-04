@@ -602,7 +602,93 @@ html, body {
   display: inline-block;
 }
 
+/* ═══════════════════════════════════════════
+   CROP MODAL
+═══════════════════════════════════════════ */
+#crop-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+#crop-modal.show {
+  display: flex;
+}
 
+.crop-container {
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  padding: 20px;
+  max-width: 600px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.crop-header {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--ui-text);
+  margin-bottom: 10px;
+}
+
+.crop-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  background: #0a0a0a;
+  border: 1px solid var(--ui-border);
+  overflow: hidden;
+}
+
+#crop-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  cursor: crosshair;
+}
+
+.crop-selection {
+  position: absolute;
+  border: 2px solid var(--ui-accent);
+  background: rgba(192,57,43,0.1);
+  pointer-events: none;
+  display: none;
+}
+.crop-selection.active { display: block; }
+
+.crop-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.crop-btn {
+  background: #0a0a0a;
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.crop-btn:hover { background: var(--ui-hover); border-color: #444; }
+.crop-btn.confirm {
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: #fff;
+}
+.crop-btn.confirm:hover { background: #a93226; }
 
 /* ═══════════════════════════════════════════
    TOAST
@@ -753,6 +839,26 @@ html, body {
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CROP MODAL
+════════════════════════════════════════ -->
+<div id="crop-modal">
+  <div class="crop-container">
+    <div class="crop-header">이미지 크롭</div>
+    <div class="crop-canvas-wrapper">
+      <canvas id="crop-canvas"></canvas>
+      <div class="crop-selection" id="crop-selection"></div>
+    </div>
+    <div style="font-size:10px; color:#999; text-align:center;">
+      드래그하여 크롭 영역을 선택하세요 (56×56 정사각형)
+    </div>
+    <div class="crop-controls">
+      <button class="crop-btn" id="crop-cancel">취소</button>
+      <button class="crop-btn confirm" id="crop-confirm">완료</button>
+    </div>
   </div>
 </div>
 
@@ -911,8 +1017,17 @@ html, body {
 ════════════════════════════════════════ */
 const state = {
   selectedEl: null,
-  registeredFonts: [],   // { name, source:'css'|'file'|'builtin' }
-  isComposing: false
+  registeredFonts: [],
+  isComposing: false,
+  cropData: {
+    imageData: null,
+    char: null,
+    startX: 0,
+    startY: 0,
+    cropX: 0,
+    cropY: 0,
+    cropSize: 56
+  }
 };
 
 /* ════════════════════════════════════════
@@ -951,14 +1066,12 @@ function buildFontSelect() {
   const prev = sel.value;
   sel.innerHTML = '';
 
-  // 플레이스홀더
   const ph = document.createElement('option');
   ph.value = ''; ph.disabled = true;
   ph.textContent = state.selectedEl ? '폰트 선택...' : '← 텍스트 클릭 후 선택';
   if (!state.selectedEl) ph.selected = true;
   sel.appendChild(ph);
 
-  // 내장 폰트
   const grp1 = document.createElement('optgroup');
   grp1.label = '── 기본 Google Fonts';
   BUILTIN_FONTS.forEach(f => {
@@ -969,7 +1082,6 @@ function buildFontSelect() {
   });
   sel.appendChild(grp1);
 
-  // 등록된 사용자 폰트
   const userFonts = state.registeredFonts;
   if (userFonts.length > 0) {
     const grp2 = document.createElement('optgroup');
@@ -993,20 +1105,15 @@ document.getElementById('capture-area').addEventListener('click', e => {
   const target = e.target.closest('.editable-target');
   if (!target) return;
 
-  // 이전 선택 해제
   document.querySelectorAll('.editable-target.selected').forEach(el => el.classList.remove('selected'));
 
   state.selectedEl = target;
   target.classList.add('selected');
 
-  // 드롭다운 업데이트
   buildFontSelect();
   updateSelectedLabel();
 });
 
-/* ════════════════════════════════════════
-   UPDATE SELECTED LABEL
-════════════════════════════════════════ */
 function updateSelectedLabel() {
   const label = document.getElementById('selected-name');
   if (!state.selectedEl) {
@@ -1023,6 +1130,113 @@ document.getElementById('font-select').addEventListener('change', e => {
   if (!state.selectedEl) return;
   state.selectedEl.style.fontFamily = e.target.value;
 });
+
+/* ════════════════════════════════════════
+   CROP MODAL FUNCTIONS
+════════════════════════════════════════ */
+function openCropModal(char, imageData) {
+  state.cropData.imageData = imageData;
+  state.cropData.char = char;
+  state.cropData.cropX = 0;
+  state.cropData.cropY = 0;
+
+  const canvas = document.getElementById('crop-canvas');
+  const img = new Image();
+  
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+  };
+  
+  img.src = imageData;
+  document.getElementById('crop-modal').classList.add('show');
+}
+
+function closeCropModal() {
+  document.getElementById('crop-modal').classList.remove('show');
+  state.cropData.imageData = null;
+  state.cropData.char = null;
+}
+
+function applyCrop() {
+  const canvas = document.getElementById('crop-canvas');
+  const selection = document.getElementById('crop-selection');
+  
+  if (!selection.classList.contains('active')) {
+    toast('크롭 영역을 선택하세요', 'err');
+    return;
+  }
+
+  const cropX = parseInt(selection.style.left) || 0;
+  const cropY = parseInt(selection.style.top) || 0;
+  const cropSize = 56;
+
+  const croppedCanvas = document.createElement('canvas');
+  croppedCanvas.width = cropSize;
+  croppedCanvas.height = cropSize;
+  const ctx = croppedCanvas.getContext('2d');
+
+  const img = new Image();
+  img.onload = () => {
+    ctx.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, cropSize, cropSize);
+    const croppedImage = croppedCanvas.toDataURL();
+    
+    const placeholder = document.querySelector(`.char-image-placeholder[data-char="${state.cropData.char}"]`);
+    placeholder.style.backgroundImage = `url('${croppedImage}')`;
+    placeholder.classList.add('has-image');
+    placeholder.textContent = '';
+
+    closeCropModal();
+    toast('이미지가 적용되었습니다', 'ok');
+  };
+  img.src = state.cropData.imageData;
+}
+
+/* ════════════════════════════════════════
+   CROP CANVAS INTERACTION
+════════════════════════════════════════ */
+const cropCanvas = document.getElementById('crop-canvas');
+const cropSelection = document.getElementById('crop-selection');
+let isDrawing = false;
+
+cropCanvas.addEventListener('mousedown', (e) => {
+  isDrawing = true;
+  const rect = cropCanvas.getBoundingClientRect();
+  state.cropData.startX = e.clientX - rect.left;
+  state.cropData.startY = e.clientY - rect.top;
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isDrawing) return;
+  
+  const rect = cropCanvas.getBoundingClientRect();
+  const currentX = e.clientX - rect.left;
+  const currentY = e.clientY - rect.top;
+
+  let cropX = Math.min(state.cropData.startX, currentX);
+  let cropY = Math.min(state.cropData.startY, currentY);
+  
+  cropX = Math.max(0, Math.min(cropX, cropCanvas.width - 56));
+  cropY = Math.max(0, Math.min(cropY, cropCanvas.height - 56));
+
+  cropSelection.style.left = cropX + 'px';
+  cropSelection.style.top = cropY + 'px';
+  cropSelection.style.width = '56px';
+  cropSelection.style.height = '56px';
+  cropSelection.classList.add('active');
+
+  state.cropData.cropX = cropX;
+  state.cropData.cropY = cropY;
+});
+
+document.addEventListener('mouseup', () => {
+  isDrawing = false;
+});
+
+document.getElementById('crop-confirm').addEventListener('click', applyCrop);
+document.getElementById('crop-cancel').addEventListener('click', closeCropModal);
 
 /* ════════════════════════════════════════
    CHARACTER IMAGE UPLOAD
@@ -1045,11 +1259,7 @@ function setupImageUpload() {
       
       const reader = new FileReader();
       reader.onload = (evt) => {
-        const dataUrl = evt.target.result;
-        const placeholder = document.querySelector(`.char-image-placeholder[data-char="${char}"]`);
-        placeholder.style.backgroundImage = `url('${dataUrl}')`;
-        placeholder.classList.add('has-image');
-        placeholder.textContent = '';
+        openCropModal(char, evt.target.result);
       };
       reader.readAsDataURL(file);
     });
@@ -1099,7 +1309,6 @@ function createSceneBlock() {
    ADD DIALOGUE
 ════════════════════════════════════════ */
 function attachEventListeners() {
-  // 씬 삭제 버튼
   document.querySelectorAll('.scene-del-btn').forEach(btn => {
     btn.replaceWith(btn.cloneNode(true));
   });
@@ -1109,7 +1318,6 @@ function attachEventListeners() {
     });
   });
 
-  // 대사 추가 버튼
   document.querySelectorAll('.add-dialogue-btn').forEach(btn => {
     btn.replaceWith(btn.cloneNode(true));
   });
@@ -1139,7 +1347,6 @@ function attachEventListeners() {
     });
   });
 
-  // 대사 삭제 버튼
   document.querySelectorAll('.dialogue-del-btn').forEach(btn => {
     btn.replaceWith(btn.cloneNode(true));
   });
@@ -1206,7 +1413,6 @@ document.getElementById('css-apply-btn').addEventListener('click', () => {
   styleEl.textContent = code;
   document.head.appendChild(styleEl);
 
-  // 폰트명 추출
   const fontMatches = code.match(/font-family\s*:\s*['"](.*?)['"]/gi);
   if (fontMatches) {
     fontMatches.forEach(match => {
@@ -1324,7 +1530,6 @@ function updateFontList() {
 document.getElementById('btn-download').addEventListener('click', () => {
   const captureArea = document.getElementById('capture-area');
   
-  // 네비게이션 UI 숨김
   document.querySelectorAll('.editable-target').forEach(el => {
     el.classList.remove('selected');
   });
@@ -1345,7 +1550,6 @@ document.getElementById('btn-download').addEventListener('click', () => {
       toast('다운로드 실패', 'err');
     })
     .finally(() => {
-      // 네비게이션 UI 복원
       document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => {
         el.style.display = '';
       });
@@ -1353,7 +1557,7 @@ document.getElementById('btn-download').addEventListener('click', () => {
 });
 
 /* ════════════════════════════════════════
-   COMPOSITION
+   INIT
 ════════════════════════════════════════ */
 setupImageUpload();
 attachEventListeners();

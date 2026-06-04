@@ -400,14 +400,14 @@ html, body {
 .char-card [contenteditable="true"]:empty::before { color: #aaaaaa; }
 
 .char-image-placeholder {
-  width: 56px;
-  height: 56px;
-  background-color: #2a2a2a;
+  width: 68px;
+  height: 68px;
+  background-color: var(--rule);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 7px;
-  color: #888; /* 아이콘 기본 색상(회색) */
+  color: #888;
   flex-shrink: 0;
   font-family: 'Orbitron', sans-serif;
   letter-spacing: 1px;
@@ -422,9 +422,13 @@ html, body {
   border-color: #888; 
   background-color: #333;
 }
-.char-image-placeholder .material-icons {
-  font-size: 32px;
-  color: #ffffff;
+.char-image-placeholder .material-icons,
+.char-image-placeholder .material-icons-outlined,
+.char-image-placeholder .material-icons-round,
+.char-image-placeholder .material-icons-sharp,
+.char-image-placeholder .material-icons-two-tone,
+.char-image-placeholder .material-symbols-outlined {
+  font-size: 38px;
 }
 
 .char-name {
@@ -646,6 +650,20 @@ html, body {
 .icon-style-btn:hover { background: #222; border-color: #444; color: #ddd; }
 .icon-style-btn.active { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
 
+.icon-color-tab {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: #888;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.icon-color-tab:first-child { border-right: none; }
+.icon-color-tab.active { background: #2a2a2a; color: #ddd; border-color: #444; }
+
 .icon-controls {
   display: flex;
   gap: 10px;
@@ -792,6 +810,51 @@ html, body {
     </div>
 
     <input type="text" id="icon-name-input" class="icon-input" placeholder="person">
+
+    <!-- 색상 설정 -->
+    <div style="margin-top:12px;">
+      <div style="display:flex; gap:0; margin-bottom:8px;">
+        <button class="icon-color-tab active" data-tab="solid">단색</button>
+        <button class="icon-color-tab" data-tab="gradient">그라데이션</button>
+      </div>
+
+      <!-- 단색 탭 -->
+      <div id="color-tab-solid" class="icon-color-panel">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="color" id="icon-color-solid" value="#ffffff" style="
+            width:36px; height:28px; border:1px solid #2a2a2a;
+            background:none; cursor:pointer; padding:2px;
+          ">
+          <input type="text" id="icon-color-solid-hex" class="icon-input" value="#ffffff"
+            placeholder="#ffffff" style="flex:1; height:28px; padding:4px 8px; font-family:monospace;">
+        </div>
+      </div>
+
+      <!-- 그라데이션 탭 -->
+      <div id="color-tab-gradient" class="icon-color-panel" style="display:none;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:9px; color:#aaa; font-family:'Orbitron',sans-serif; width:24px;">FROM</span>
+            <input type="color" id="icon-grad-from" value="#ff6b6b" style="width:36px; height:28px; border:1px solid #2a2a2a; background:none; cursor:pointer; padding:2px;">
+            <input type="text" id="icon-grad-from-hex" class="icon-input" value="#ff6b6b" placeholder="#ff6b6b" style="flex:1; height:28px; padding:4px 8px; font-family:monospace;">
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:9px; color:#aaa; font-family:'Orbitron',sans-serif; width:24px;">TO</span>
+            <input type="color" id="icon-grad-to" value="#4ecdc4" style="width:36px; height:28px; border:1px solid #2a2a2a; background:none; cursor:pointer; padding:2px;">
+            <input type="text" id="icon-grad-to-hex" class="icon-input" value="#4ecdc4" placeholder="#4ecdc4" style="flex:1; height:28px; padding:4px 8px; font-family:monospace;">
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:9px; color:#aaa; font-family:'Orbitron',sans-serif; width:24px;">DIR</span>
+            <select id="icon-grad-dir" style="flex:1; background:#1a1a1a; border:1px solid #2a2a2a; color:#ddd; font-size:11px; padding:4px 6px; height:28px; outline:none;">
+              <option value="to bottom">↓ 상→하</option>
+              <option value="to right">→ 좌→우</option>
+              <option value="to bottom right">↘ 대각선</option>
+              <option value="to top right">↗ 역대각선</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="icon-preview" style="
       margin-top:10px;
@@ -995,6 +1058,77 @@ document.querySelectorAll('.icon-style-btn').forEach(btn => {
   });
 });
 
+// 색상 탭 전환
+document.querySelectorAll('.icon-color-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.icon-color-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('color-tab-solid').style.display = tab.dataset.tab === 'solid' ? '' : 'none';
+    document.getElementById('color-tab-gradient').style.display = tab.dataset.tab === 'gradient' ? '' : 'none';
+    updateIconPreview();
+  });
+});
+
+// 단색 color picker ↔ hex 동기화
+document.getElementById('icon-color-solid').addEventListener('input', e => {
+  document.getElementById('icon-color-solid-hex').value = e.target.value;
+  updateIconPreview();
+});
+document.getElementById('icon-color-solid-hex').addEventListener('input', e => {
+  const v = e.target.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    document.getElementById('icon-color-solid').value = v;
+    updateIconPreview();
+  }
+});
+
+// 그라데이션 동기화
+function syncGrad(colorId, hexId) {
+  document.getElementById(colorId).addEventListener('input', e => {
+    document.getElementById(hexId).value = e.target.value;
+    updateIconPreview();
+  });
+  document.getElementById(hexId).addEventListener('input', e => {
+    const v = e.target.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+      document.getElementById(colorId).value = v;
+      updateIconPreview();
+    }
+  });
+}
+syncGrad('icon-grad-from', 'icon-grad-from-hex');
+syncGrad('icon-grad-to',   'icon-grad-to-hex');
+document.getElementById('icon-grad-dir').addEventListener('change', updateIconPreview);
+
+function getIconColorStyle() {
+  const activeTab = document.querySelector('.icon-color-tab.active')?.dataset.tab || 'solid';
+  if (activeTab === 'solid') {
+    const color = document.getElementById('icon-color-solid').value;
+    return { type: 'solid', color };
+  } else {
+    const from = document.getElementById('icon-grad-from').value;
+    const to   = document.getElementById('icon-grad-to').value;
+    const dir  = document.getElementById('icon-grad-dir').value;
+    return { type: 'gradient', from, to, dir };
+  }
+}
+
+// 그라데이션을 아이콘 span에 적용하는 헬퍼
+function applyIconColor(span, colorInfo) {
+  if (colorInfo.type === 'solid') {
+    span.style.color = colorInfo.color;
+    span.style.background = '';
+    span.style.webkitBackgroundClip = '';
+    span.style.webkitTextFillColor = '';
+  } else {
+    const grad = `linear-gradient(${colorInfo.dir}, ${colorInfo.from}, ${colorInfo.to})`;
+    span.style.background = grad;
+    span.style.webkitBackgroundClip = 'text';
+    span.style.webkitTextFillColor = 'transparent';
+    span.style.color = '';
+  }
+}
+
 // 실시간 미리보기
 document.getElementById('icon-name-input').addEventListener('input', updateIconPreview);
 
@@ -1005,19 +1139,35 @@ function updateIconPreview() {
     preview.innerHTML = '<span style="font-size:11px; color:#555;">이름을 입력하면 미리보기가 표시됩니다</span>';
     return;
   }
-  // 현재 선택된 스타일로만 미리보기
-  preview.innerHTML = `
-    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-      <span class="${state.iconStyle}" style="font-size:36px; color:#fff;">${name}</span>
-      <span style="font-size:9px; color:#666; font-family:'Orbitron',sans-serif; letter-spacing:1px;">${state.iconStyle.replace('material-','').replace(/-/g,' ').toUpperCase()}</span>
-    </div>
-  `;
+  const colorInfo = getIconColorStyle();
+  const span = document.createElement('span');
+  span.className = state.iconStyle;
+  span.style.fontSize = '44px';
+  span.textContent = name;
+  applyIconColor(span, colorInfo);
+
+  const label = document.createElement('span');
+  label.style.cssText = 'font-size:9px; color:#666; font-family:Orbitron,sans-serif; letter-spacing:1px; margin-top:4px;';
+  label.textContent = state.iconStyle.replace('material-','').replace(/-/g,' ').toUpperCase();
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:4px;';
+  wrap.appendChild(span);
+  wrap.appendChild(label);
+
+  preview.innerHTML = '';
+  preview.appendChild(wrap);
 }
 
 document.getElementById('icon-confirm').addEventListener('click', () => {
   const iconName = document.getElementById('icon-name-input').value.trim();
   if (state.targetIconPlaceholder && iconName) {
-    state.targetIconPlaceholder.innerHTML = `<span class="${state.iconStyle}">${iconName}</span>`;
+    const span = document.createElement('span');
+    span.className = state.iconStyle;
+    span.textContent = iconName;
+    applyIconColor(span, getIconColorStyle());
+    state.targetIconPlaceholder.innerHTML = '';
+    state.targetIconPlaceholder.appendChild(span);
     toast('아이콘이 적용되었습니다', 'ok');
   }
   document.getElementById('icon-modal').classList.remove('show');

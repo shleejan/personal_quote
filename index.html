@@ -603,7 +603,7 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════
-   CROP MODAL
+   CROP MODAL — TWITTER STYLE
 ═══════════════════════════════════════════ */
 #crop-modal {
   display: none;
@@ -623,7 +623,7 @@ html, body {
   border: 1px solid var(--ui-border);
   border-radius: 4px;
   padding: 20px;
-  max-width: 600px;
+  max-width: 500px;
   width: 90%;
   display: flex;
   flex-direction: column;
@@ -635,35 +635,99 @@ html, body {
   font-size: 12px;
   letter-spacing: 2px;
   color: var(--ui-text);
-  margin-bottom: 10px;
 }
 
-.crop-canvas-wrapper {
+.crop-preview-wrapper {
   position: relative;
   width: 100%;
   height: 300px;
   background: #0a0a0a;
   border: 1px solid var(--ui-border);
   overflow: hidden;
+  border-radius: 2px;
 }
 
-#crop-canvas {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-  cursor: crosshair;
-}
-
-.crop-selection {
+.crop-image-container {
   position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#crop-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: grab;
+  user-select: none;
+}
+
+#crop-image:active {
+  cursor: grabbing;
+}
+
+.crop-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
   border: 2px solid var(--ui-accent);
   background: rgba(192,57,43,0.1);
+  box-shadow: 
+    inset 0 0 0 9999px rgba(0,0,0,0.5),
+    0 0 0 1px var(--ui-accent);
   pointer-events: none;
-  display: none;
+  z-index: 10;
 }
-.crop-selection.active { display: block; }
+
+.crop-instructions {
+  font-size: 10px;
+  color: #999;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.crop-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.crop-zoom-btn {
+  background: #0a0a0a;
+  border: 1px solid var(--ui-border);
+  color: var(--ui-text);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.crop-zoom-btn:hover {
+  background: var(--ui-hover);
+  border-color: #444;
+}
+
+.crop-zoom-slider {
+  flex: 1;
+  max-width: 200px;
+}
+
+.crop-zoom-slider input {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  accent-color: var(--ui-accent);
+}
 
 .crop-controls {
   display: flex;
@@ -682,13 +746,21 @@ html, body {
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
-.crop-btn:hover { background: var(--ui-hover); border-color: #444; }
+
+.crop-btn:hover {
+  background: var(--ui-hover);
+  border-color: #444;
+}
+
 .crop-btn.confirm {
   background: var(--ui-accent);
   border-color: var(--ui-accent);
   color: #fff;
 }
-.crop-btn.confirm:hover { background: #a93226; }
+
+.crop-btn.confirm:hover {
+  background: #a93226;
+}
 
 /* ═══════════════════════════════════════════
    TOAST
@@ -843,18 +915,31 @@ html, body {
 </div>
 
 <!-- ════════════════════════════════════════
-     CROP MODAL
+     CROP MODAL — TWITTER STYLE
 ════════════════════════════════════════ -->
 <div id="crop-modal">
   <div class="crop-container">
     <div class="crop-header">이미지 크롭</div>
-    <div class="crop-canvas-wrapper">
-      <canvas id="crop-canvas"></canvas>
-      <div class="crop-selection" id="crop-selection"></div>
+    
+    <div class="crop-preview-wrapper">
+      <div class="crop-image-container" id="crop-image-container">
+        <img id="crop-image" src="" alt="crop">
+      </div>
+      <div class="crop-frame"></div>
     </div>
-    <div style="font-size:10px; color:#999; text-align:center;">
-      드래그하여 크롭 영역을 선택하세요 (56×56 정사각형)
+
+    <div class="crop-instructions">
+      드래그하여 이미지를 이동하고 줌 슬라이더로 크기를 조절하세요
     </div>
+
+    <div class="crop-zoom-controls">
+      <button class="crop-zoom-btn" id="crop-zoom-out">−</button>
+      <div class="crop-zoom-slider">
+        <input type="range" id="crop-zoom" min="1" max="5" step="0.1" value="1">
+      </div>
+      <button class="crop-zoom-btn" id="crop-zoom-in">+</button>
+    </div>
+
     <div class="crop-controls">
       <button class="crop-btn" id="crop-cancel">취소</button>
       <button class="crop-btn confirm" id="crop-confirm">완료</button>
@@ -1022,11 +1107,14 @@ const state = {
   cropData: {
     imageData: null,
     char: null,
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0
+  },
+  cropDrag: {
+    isDragging: false,
     startX: 0,
-    startY: 0,
-    cropX: 0,
-    cropY: 0,
-    cropSize: 56
+    startY: 0
   }
 };
 
@@ -1132,25 +1220,21 @@ document.getElementById('font-select').addEventListener('change', e => {
 });
 
 /* ════════════════════════════════════════
-   CROP MODAL FUNCTIONS
+   CROP MODAL — TWITTER STYLE
 ════════════════════════════════════════ */
 function openCropModal(char, imageData) {
   state.cropData.imageData = imageData;
   state.cropData.char = char;
-  state.cropData.cropX = 0;
-  state.cropData.cropY = 0;
+  state.cropData.zoom = 1;
+  state.cropData.offsetX = 0;
+  state.cropData.offsetY = 0;
 
-  const canvas = document.getElementById('crop-canvas');
-  const img = new Image();
+  const cropImage = document.getElementById('crop-image');
+  cropImage.src = imageData;
   
-  img.onload = () => {
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-  };
+  const zoomSlider = document.getElementById('crop-zoom');
+  zoomSlider.value = 1;
   
-  img.src = imageData;
   document.getElementById('crop-modal').classList.add('show');
 }
 
@@ -1160,28 +1244,33 @@ function closeCropModal() {
   state.cropData.char = null;
 }
 
-function applyCrop() {
-  const canvas = document.getElementById('crop-canvas');
-  const selection = document.getElementById('crop-selection');
+function updateCropImage() {
+  const img = document.getElementById('crop-image');
+  const container = document.getElementById('crop-image-container');
   
-  if (!selection.classList.contains('active')) {
-    toast('크롭 영역을 선택하세요', 'err');
-    return;
-  }
+  img.style.transform = `translate(${state.cropData.offsetX}px, ${state.cropData.offsetY}px) scale(${state.cropData.zoom})`;
+}
 
-  const cropX = parseInt(selection.style.left) || 0;
-  const cropY = parseInt(selection.style.top) || 0;
-  const cropSize = 56;
+function applyCrop() {
+  const container = document.getElementById('crop-image-container');
+  const frame = document.querySelector('.crop-frame');
+  
+  const frameRect = frame.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  
+  const x = frameRect.left - containerRect.left;
+  const y = frameRect.top - containerRect.top;
+  const size = 56;
 
-  const croppedCanvas = document.createElement('canvas');
-  croppedCanvas.width = cropSize;
-  croppedCanvas.height = cropSize;
-  const ctx = croppedCanvas.getContext('2d');
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
 
   const img = new Image();
   img.onload = () => {
-    ctx.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, cropSize, cropSize);
-    const croppedImage = croppedCanvas.toDataURL();
+    ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
+    const croppedImage = canvas.toDataURL();
     
     const placeholder = document.querySelector(`.char-image-placeholder[data-char="${state.cropData.char}"]`);
     placeholder.style.backgroundImage = `url('${croppedImage}')`;
@@ -1195,44 +1284,51 @@ function applyCrop() {
 }
 
 /* ════════════════════════════════════════
-   CROP CANVAS INTERACTION
+   CROP IMAGE INTERACTION
 ════════════════════════════════════════ */
-const cropCanvas = document.getElementById('crop-canvas');
-const cropSelection = document.getElementById('crop-selection');
-let isDrawing = false;
+const cropImageContainer = document.getElementById('crop-image-container');
+const cropImage = document.getElementById('crop-image');
 
-cropCanvas.addEventListener('mousedown', (e) => {
-  isDrawing = true;
-  const rect = cropCanvas.getBoundingClientRect();
-  state.cropData.startX = e.clientX - rect.left;
-  state.cropData.startY = e.clientY - rect.top;
+cropImageContainer.addEventListener('mousedown', (e) => {
+  state.cropDrag.isDragging = true;
+  state.cropDrag.startX = e.clientX - state.cropData.offsetX;
+  state.cropDrag.startY = e.clientY - state.cropData.offsetY;
 });
 
 document.addEventListener('mousemove', (e) => {
-  if (!isDrawing) return;
+  if (!state.cropDrag.isDragging) return;
   
-  const rect = cropCanvas.getBoundingClientRect();
-  const currentX = e.clientX - rect.left;
-  const currentY = e.clientY - rect.top;
-
-  let cropX = Math.min(state.cropData.startX, currentX);
-  let cropY = Math.min(state.cropData.startY, currentY);
-  
-  cropX = Math.max(0, Math.min(cropX, cropCanvas.width - 56));
-  cropY = Math.max(0, Math.min(cropY, cropCanvas.height - 56));
-
-  cropSelection.style.left = cropX + 'px';
-  cropSelection.style.top = cropY + 'px';
-  cropSelection.style.width = '56px';
-  cropSelection.style.height = '56px';
-  cropSelection.classList.add('active');
-
-  state.cropData.cropX = cropX;
-  state.cropData.cropY = cropY;
+  state.cropData.offsetX = e.clientX - state.cropDrag.startX;
+  state.cropData.offsetY = e.clientY - state.cropDrag.startY;
+  updateCropImage();
 });
 
 document.addEventListener('mouseup', () => {
-  isDrawing = false;
+  state.cropDrag.isDragging = false;
+});
+
+/* ════════════════════════════════════════
+   CROP ZOOM CONTROLS
+════════════════════════════════════════ */
+const zoomSlider = document.getElementById('crop-zoom');
+const zoomInBtn = document.getElementById('crop-zoom-in');
+const zoomOutBtn = document.getElementById('crop-zoom-out');
+
+zoomSlider.addEventListener('input', (e) => {
+  state.cropData.zoom = parseFloat(e.target.value);
+  updateCropImage();
+});
+
+zoomInBtn.addEventListener('click', () => {
+  state.cropData.zoom = Math.min(5, state.cropData.zoom + 0.2);
+  zoomSlider.value = state.cropData.zoom;
+  updateCropImage();
+});
+
+zoomOutBtn.addEventListener('click', () => {
+  state.cropData.zoom = Math.max(1, state.cropData.zoom - 0.2);
+  zoomSlider.value = state.cropData.zoom;
+  updateCropImage();
 });
 
 document.getElementById('crop-confirm').addEventListener('click', applyCrop);

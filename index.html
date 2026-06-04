@@ -138,6 +138,13 @@ html, body {
 }
 .tb-btn.primary:hover { background: #a93226; }
 
+.tb-btn.tb-stepper {
+  padding: 0 7px;
+  min-width: 26px;
+}
+
+#text-controls { transition: opacity 0.15s; }
+
 .tb-spacer { flex: 1; }
 
 #selected-label {
@@ -718,6 +725,26 @@ html, body {
     </select>
   </div>
 
+  <div class="tb-group" id="text-controls" style="opacity:0.3; pointer-events:none;">
+    <span class="tb-label">SIZE</span>
+    <button class="tb-btn tb-stepper" id="btn-fs-down" title="폰트 크기 줄이기">
+      <svg viewBox="0 0 16 16"><path d="M3 8h10"/></svg>
+    </button>
+    <span id="fs-display" style="font-family:'Orbitron',sans-serif; font-size:10px; color:var(--ui-text); min-width:28px; text-align:center; letter-spacing:1px;">—</span>
+    <button class="tb-btn tb-stepper" id="btn-fs-up" title="폰트 크기 늘리기">
+      <svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>
+    </button>
+    <div class="tb-divider"></div>
+    <span class="tb-label">LINE</span>
+    <button class="tb-btn tb-stepper" id="btn-lh-down" title="줄간격 줄이기">
+      <svg viewBox="0 0 16 16"><path d="M3 8h10"/></svg>
+    </button>
+    <span id="lh-display" style="font-family:'Orbitron',sans-serif; font-size:10px; color:var(--ui-text); min-width:28px; text-align:center; letter-spacing:1px;">—</span>
+    <button class="tb-btn tb-stepper" id="btn-lh-up" title="줄간격 늘리기">
+      <svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>
+    </button>
+  </div>
+
   <div class="tb-group">
     <button class="tb-btn" id="btn-add-scene" title="씬 블록 추가">
       <svg viewBox="0 0 16 16"><path d="M8 2v12M2 8h12"/></svg>
@@ -1016,11 +1043,63 @@ document.getElementById('capture-area').addEventListener('click', e => {
 function updateSelectedLabel() {
   const label = document.getElementById('selected-name');
   label.textContent = state.selectedEl ? (state.selectedEl.dataset.label || '—') : '—';
+  updateTextControls();
+}
+
+function updateTextControls() {
+  const ctrl = document.getElementById('text-controls');
+  const el = state.selectedEl;
+  const isLine = el && el.classList.contains('speaker-line');
+
+  ctrl.style.opacity = isLine ? '1' : '0.3';
+  ctrl.style.pointerEvents = isLine ? 'auto' : 'none';
+
+  if (isLine) {
+    const fs = parseFloat(getComputedStyle(el).fontSize) || 14;
+    const lh = parseFloat(el.style.lineHeight) || 1.6;
+    document.getElementById('fs-display').textContent = Math.round(fs) + 'px';
+    document.getElementById('lh-display').textContent = lh.toFixed(1);
+  } else {
+    document.getElementById('fs-display').textContent = '—';
+    document.getElementById('lh-display').textContent = '—';
+  }
 }
 
 document.getElementById('font-select').addEventListener('change', e => {
   if (!state.selectedEl) return;
   state.selectedEl.style.fontFamily = e.target.value;
+});
+
+// 폰트 크기 스테퍼
+document.getElementById('btn-fs-up').addEventListener('click', () => {
+  if (!state.selectedEl) return;
+  const cur = parseFloat(getComputedStyle(state.selectedEl).fontSize) || 14;
+  const next = Math.min(cur + 1, 40);
+  state.selectedEl.style.fontSize = next + 'px';
+  document.getElementById('fs-display').textContent = next + 'px';
+});
+document.getElementById('btn-fs-down').addEventListener('click', () => {
+  if (!state.selectedEl) return;
+  const cur = parseFloat(getComputedStyle(state.selectedEl).fontSize) || 14;
+  const next = Math.max(cur - 1, 8);
+  state.selectedEl.style.fontSize = next + 'px';
+  document.getElementById('fs-display').textContent = next + 'px';
+});
+
+// 줄간격 스테퍼 (0.1 단위)
+document.getElementById('btn-lh-up').addEventListener('click', () => {
+  if (!state.selectedEl) return;
+  const cur = parseFloat(state.selectedEl.style.lineHeight) || 1.6;
+  const next = Math.min(Math.round((cur + 0.1) * 10) / 10, 4.0);
+  state.selectedEl.style.lineHeight = next;
+  document.getElementById('lh-display').textContent = next.toFixed(1);
+});
+document.getElementById('btn-lh-down').addEventListener('click', () => {
+  if (!state.selectedEl) return;
+  const cur = parseFloat(state.selectedEl.style.lineHeight) || 1.6;
+  const next = Math.max(Math.round((cur - 0.1) * 10) / 10, 0.8);
+  state.selectedEl.style.lineHeight = next;
+  document.getElementById('lh-display').textContent = next.toFixed(1);
 });
 
 /* ════════════════════════════════════════

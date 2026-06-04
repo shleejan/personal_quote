@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>THE DAILY DIALOGUE</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <link id="gf-link" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Black+Han+Sans:wght@400&family=Gasoek+One:wght@400&family=Hahmlet:wght@300;400;500;600;700;800;900&family=Gowun+Batang:wght@400;700&family=Sunflower:wght@300;500;700&family=Raleway:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap">
 
@@ -18,7 +18,7 @@
 ═══════════════════════════════════════════ */
 :root {
   --ink: #0a0a0a;
-  --paper: #f8f8f8;
+  --paper: #fcfcfc;
   --rule: #1a1a1a;
   --dim: #666;
   --light: #dcdcdc;
@@ -996,7 +996,6 @@ function toast(msg, type = '') {
 
 function buildFontSelect() {
   const sel = document.getElementById('font-select');
-  const prev = sel.value;
   sel.innerHTML = '';
 
   const ph = document.createElement('option');
@@ -1005,12 +1004,16 @@ function buildFontSelect() {
   if (!state.selectedEl) ph.selected = true;
   sel.appendChild(ph);
 
+  // 현재 요소의 fontFamily 정규화 (브라우저가 따옴표 스타일을 바꿀 수 있으므로)
+  const currentFamily = state.selectedEl
+    ? state.selectedEl.style.fontFamily.replace(/['"]/g, '').split(',')[0].trim().toLowerCase()
+    : '';
+
   const grp1 = document.createElement('optgroup');
   grp1.label = '── 기본 Google Fonts';
   BUILTIN_FONTS.forEach(f => {
     const o = document.createElement('option');
     o.value = f.family; o.textContent = f.name;
-    if (state.selectedEl && state.selectedEl.style.fontFamily === f.family) o.selected = true;
     grp1.appendChild(o);
   });
   sel.appendChild(grp1);
@@ -1027,7 +1030,21 @@ function buildFontSelect() {
     });
     sel.appendChild(grp2);
   }
-  if (prev) sel.value = prev;
+
+  // 현재 요소 폰트와 일치하는 옵션 선택 (정규화 비교)
+  if (state.selectedEl && currentFamily) {
+    let matched = false;
+    for (const opt of sel.options) {
+      if (!opt.value) continue;
+      const optFamily = opt.value.replace(/['"]/g, '').split(',')[0].trim().toLowerCase();
+      if (optFamily === currentFamily) {
+        sel.value = opt.value;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) sel.value = '';
+  }
 }
 
 document.getElementById('capture-area').addEventListener('click', e => {
@@ -1211,8 +1228,14 @@ function applyIconColor(span, colorInfo) {
 // 실시간 미리보기
 document.getElementById('icon-name-input').addEventListener('input', updateIconPreview);
 
+function normalizeIconName(name) {
+  // Material Icons ligature: 공백을 언더스코어로 변환 (예: "arrow forward" → "arrow_forward")
+  return name.trim().replace(/\s+/g, '_');
+}
+
 function updateIconPreview() {
-  const name = document.getElementById('icon-name-input').value.trim();
+  const raw = document.getElementById('icon-name-input').value.trim();
+  const name = normalizeIconName(raw);
   const preview = document.getElementById('icon-preview');
   if (!name) {
     preview.innerHTML = '<span style="font-size:11px; color:#555;">이름을 입력하면 미리보기가 표시됩니다</span>';
@@ -1239,7 +1262,7 @@ function updateIconPreview() {
 }
 
 document.getElementById('icon-confirm').addEventListener('click', () => {
-  const iconName = document.getElementById('icon-name-input').value.trim();
+  const iconName = normalizeIconName(document.getElementById('icon-name-input').value.trim());
   if (state.targetIconPlaceholder && iconName) {
     const span = document.createElement('span');
     span.className = state.iconStyle;
@@ -1316,6 +1339,21 @@ document.getElementById('btn-save').addEventListener('click', () => {
   const captureArea = document.getElementById('capture-area');
   const html = captureArea.innerHTML;
   localStorage.setItem('dialogue-content', html);
+
+  // 등록된 폰트 메타 + file 폰트의 @font-face 데이터 함께 저장
+  const fontData = state.registeredFonts.map(f => {
+    if (f.source === 'file' && f.dataUrl && f.format) {
+      return { name: f.name, source: 'file', dataUrl: f.dataUrl, format: f.format };
+    }
+    // css 타입은 dataUrl 없이 이름만 (CSS 코드 자체는 이미 head에 주입돼 있어 별도 복원 불필요)
+    return { name: f.name, source: f.source };
+  });
+  try {
+    localStorage.setItem('dialogue-fonts', JSON.stringify(fontData));
+  } catch(e) {
+    // dataUrl이 너무 커서 quota 초과 시 폰트 저장 생략하고 경고만
+    console.warn('폰트 데이터 저장 실패 (용량 초과 가능성):', e);
+  }
   toast('저장했습니다', 'ok');
 });
 
@@ -1328,6 +1366,38 @@ document.getElementById('btn-load').addEventListener('click', () => {
   document.getElementById('capture-area').innerHTML = html;
   attachEventListeners();
   setupIconInsertion();
+
+  // 저장된 폰트 복원
+  const fontJson = localStorage.getItem('dialogue-fonts');
+  if (fontJson) {
+    try {
+      const savedFonts = JSON.parse(fontJson);
+      let restoredCount = 0;
+      savedFonts.forEach(f => {
+        if (state.registeredFonts.some(r => r.name === f.name)) return; // 이미 등록됨
+        if (f.source === 'file' && f.dataUrl && f.format) {
+          const fontFace = `@font-face { font-family: '${f.name}'; src: url('${f.dataUrl}') format('${f.format}'); font-display: swap; }`;
+          const styleEl = document.createElement('style');
+          styleEl.textContent = fontFace;
+          document.head.appendChild(styleEl);
+          state.registeredFonts.push({ name: f.name, source: 'file', dataUrl: f.dataUrl, format: f.format });
+          restoredCount++;
+        }
+        // css 타입은 @font-face 원본 코드가 없으므로 이름만 목록에 등록 (렌더는 이미 된 상태)
+        else if (f.source === 'css') {
+          state.registeredFonts.push({ name: f.name, source: 'css' });
+        }
+      });
+      buildFontSelect();
+      updateFontList();
+      if (restoredCount > 0) {
+        toast(`불러왔습니다 (폰트 ${restoredCount}개 복원)`, 'ok');
+        return;
+      }
+    } catch(e) {
+      console.warn('폰트 복원 실패:', e);
+    }
+  }
   toast('불러왔습니다', 'ok');
 });
 
@@ -1396,7 +1466,7 @@ function handleFontFiles(files) {
       document.head.appendChild(styleEl);
 
       if (!state.registeredFonts.some(f => f.name === name)) {
-        state.registeredFonts.push({ name, source: 'file' });
+        state.registeredFonts.push({ name, source: 'file', dataUrl, format: getFormat(file.name) });
       }
       buildFontSelect();
       updateFontList();
@@ -1434,62 +1504,109 @@ function updateFontList() {
   });
 }
 
+// ── 폰트 URL → base64 변환 헬퍼 ──────────────────────────────────────────
+async function fetchFontCssInlined(cssUrl) {
+  // Google Fonts는 UA에 따라 woff2를 반환하므로 woff2 허용 UA로 요청
+  const resp = await fetch(cssUrl, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+  });
+  let css = await resp.text();
+  const urlMatches = [...css.matchAll(/url\((https?:\/\/[^)]+)\)/g)];
+  await Promise.all(urlMatches.map(async (m) => {
+    try {
+      const fontResp = await fetch(m[1]);
+      const blob = await fontResp.blob();
+      const b64 = await new Promise(res => {
+        const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(blob);
+      });
+      css = css.replace(m[0], `url(${b64})`);
+    } catch(e) { /* 개별 폰트 실패 시 skip */ }
+  }));
+  return css;
+}
+
 document.getElementById('btn-download').addEventListener('click', async () => {
   const captureArea = document.getElementById('capture-area');
   document.querySelectorAll('.editable-target').forEach(el => el.classList.remove('selected'));
   document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => el.style.display = 'none');
 
-  // Google Fonts를 Base64로 인라인 embed하여 캡처 이미지에 폰트가 정확히 반영되도록 처리
-  let inlineStyleEl = null;
+  toast('이미지 생성 중...', 'ok');
+  const inlineStyleEls = [];
+
   try {
+    // 1) Google Fonts 텍스트 폰트 인라인 임베드
     const gfLink = document.getElementById('gf-link');
     if (gfLink && gfLink.href) {
-      const cssResp = await fetch(gfLink.href);
-      let cssText = await cssResp.text();
+      try {
+        const css = await fetchFontCssInlined(gfLink.href);
+        const styleEl = document.createElement('style');
+        styleEl.id = 'gf-inline-embed';
+        styleEl.textContent = css;
+        document.head.appendChild(styleEl);
+        inlineStyleEls.push(styleEl);
+      } catch(e) { console.warn('Google Fonts 인라인 처리 실패:', e); }
+    }
 
-      // CSS 내 url() 폰트 파일을 Base64로 치환
-      const urlMatches = [...cssText.matchAll(/url\((https?:\/\/[^)]+)\)/g)];
-      await Promise.all(urlMatches.map(async (m) => {
-        try {
-          const fontResp = await fetch(m[1]);
-          const blob = await fontResp.blob();
-          const b64 = await new Promise(res => {
-            const r = new FileReader();
-            r.onload = () => res(r.result);
-            r.readAsDataURL(blob);
-          });
-          cssText = cssText.replace(m[0], `url(${b64})`);
-        } catch(e) { /* 개별 폰트 실패 시 스킵 */ }
-      }));
-
-      inlineStyleEl = document.createElement('style');
-      inlineStyleEl.id = 'gf-inline-embed';
-      inlineStyleEl.textContent = cssText;
-      document.head.appendChild(inlineStyleEl);
+    // 2) Material Icons / Material Symbols 아이콘 폰트 인라인 임베드
+    const iconLinkUrls = [
+      'https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp|Material+Icons+Two+Tone',
+      'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block'
+    ];
+    for (const iconUrl of iconLinkUrls) {
+      try {
+        const css = await fetchFontCssInlined(iconUrl);
+        const styleEl = document.createElement('style');
+        styleEl.textContent = css;
+        document.head.appendChild(styleEl);
+        inlineStyleEls.push(styleEl);
+      } catch(e) { console.warn('아이콘 폰트 인라인 처리 실패:', e); }
     }
   } catch(e) {
-    console.warn('Google Fonts 인라인 처리 실패, 기본 캡처 진행:', e);
+    console.warn('폰트 인라인 처리 실패, 기본 캡처 진행:', e);
   }
 
-  // 폰트 렌더링 안정화를 위해 잠시 대기
+  // 3) 브라우저가 모든 폰트 렌더링을 완료할 때까지 대기
+  try { await document.fonts.ready; } catch(e) {}
   await new Promise(r => setTimeout(r, 300));
 
-  domtoimage.toPng(captureArea)
-    .then(image => {
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `dialogue-${Date.now()}.png`;
-      link.click();
-      toast('다운로드되었습니다', 'ok');
-    })
-    .catch(err => {
-      console.error(err);
-      toast('다운로드 실패', 'err');
-    })
-    .finally(() => {
-      document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => el.style.display = '');
-      if (inlineStyleEl) inlineStyleEl.remove();
+  // 4) html2canvas로 캡처 (useCORS + allowTaint 조합으로 외부 리소스 허용)
+  try {
+    const canvas = await html2canvas(captureArea, {
+      useCORS: true,
+      allowTaint: false,
+      scale: 2,           // 2배 해상도 (선명하게)
+      backgroundColor: null,
+      logging: false,
+      imageTimeout: 15000,
+      onclone: (clonedDoc) => {
+        // 인라인 임베드된 폰트 스타일을 클론 문서에도 복사
+        inlineStyleEls.forEach(el => {
+          const clone = clonedDoc.createElement('style');
+          clone.textContent = el.textContent;
+          clonedDoc.head.appendChild(clone);
+        });
+        // 업로드된 파일 폰트(@font-face dataUrl)도 클론에 복사
+        document.querySelectorAll('style').forEach(s => {
+          if (s.textContent.includes('@font-face') && !inlineStyleEls.includes(s)) {
+            const clone = clonedDoc.createElement('style');
+            clone.textContent = s.textContent;
+            clonedDoc.head.appendChild(clone);
+          }
+        });
+      }
     });
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = `dialogue-${Date.now()}.png`;
+    link.click();
+    toast('다운로드되었습니다', 'ok');
+  } catch(err) {
+    console.error(err);
+    toast('다운로드 실패', 'err');
+  } finally {
+    document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => el.style.display = '');
+    inlineStyleEls.forEach(el => el.remove());
+  }
 });
 
 setupIconInsertion();

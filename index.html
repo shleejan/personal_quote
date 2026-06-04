@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>THE DAILY DIALOGUE</title>
 
-<!-- dom-to-image-more -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
 
-<!-- 기본 내장 Google Fonts -->
 <link id="gf-link" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Black+Han+Sans:wght@400&family=Gasoek+One:wght@400&family=Hahmlet:wght@300;400;500;600;700;800;900&family=Gowun+Batang:wght@400;700&family=Sunflower:wght@300;500;700&family=Raleway:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap">
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <style>
 /* ═══════════════════════════════════════════
@@ -86,16 +86,15 @@ html, body {
 
 .tb-label {
   font-family: 'Orbitron', sans-serif;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 2px;
-  color: #555;
+  color: #aaa;
   padding: 0 8px;
   display: flex;
   align-items: center;
   white-space: nowrap;
 }
 
-/* 폰트 선택 드롭다운 */
 .tb-font-select {
   background: var(--ui-hover);
   border: 1px solid var(--ui-border);
@@ -110,7 +109,6 @@ html, body {
 }
 .tb-font-select:focus { border-color: var(--ui-accent); }
 
-/* 툴바 버튼 */
 .tb-btn {
   background: transparent;
   border: 1px solid transparent;
@@ -141,12 +139,11 @@ html, body {
 
 .tb-spacer { flex: 1; }
 
-/* 선택된 요소 표시 */
 #selected-label {
   font-family: 'Orbitron', sans-serif;
   font-size: 9px;
   letter-spacing: 2px;
-  color: #444;
+  color: #999;
   padding: 0 12px;
   display: flex;
   align-items: center;
@@ -190,7 +187,7 @@ html, body {
 .fp-close {
   background: none;
   border: none;
-  color: #555;
+  color: #999;
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
@@ -204,13 +201,12 @@ html, body {
   font-family: 'Orbitron', sans-serif;
   font-size: 9px;
   letter-spacing: 2px;
-  color: #555;
+  color: #bbb;
   margin-bottom: 10px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--ui-border);
 }
 
-/* 방식 A: CSS 코드 붙여넣기 */
 .fp-textarea {
   width: 100%;
   background: #0a0a0a;
@@ -226,9 +222,8 @@ html, body {
   placeholder-color: #444;
 }
 .fp-textarea:focus { border-color: #444; }
-.fp-textarea::placeholder { color: #333; }
+.fp-textarea::placeholder { color: #666; }
 
-/* 방식 B: 파일 업로드 */
 .fp-upload-zone {
   border: 1px dashed var(--ui-border);
   padding: 16px;
@@ -242,11 +237,10 @@ html, body {
 }
 .fp-upload-zone:hover { border-color: #555; background: #0a0a0a; }
 .fp-upload-zone.dragover { border-color: var(--ui-accent); background: rgba(192,57,43,0.05); }
-.fp-upload-icon { font-size: 20px; color: #444; }
-.fp-upload-text { font-size: 11px; color: #555; line-height: 1.5; }
-.fp-upload-text strong { color: #888; display: block; }
+.fp-upload-icon { font-size: 20px; color: #888; }
+.fp-upload-text { font-size: 11px; color: #aaa; line-height: 1.5; }
+.fp-upload-text strong { color: #ddd; display: block; }
 
-/* 등록된 폰트 목록 */
 .fp-font-list { display: flex; flex-direction: column; gap: 6px; }
 .fp-font-item {
   background: #0a0a0a;
@@ -278,7 +272,7 @@ html, body {
 .fp-font-del {
   background: none;
   border: none;
-  color: #444;
+  color: #777;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
@@ -350,7 +344,6 @@ html, body {
   position: relative;
 }
 
-/* ─── contenteditable 공통 ─── */
 [contenteditable="true"] { outline: none; cursor: text; }
 [contenteditable="true"]:empty::before {
   content: attr(data-placeholder);
@@ -359,7 +352,6 @@ html, body {
   pointer-events: none;
 }
 
-/* ─── 선택 하이라이트 ─── */
 .editable-target {
   transition: outline 0.1s;
   border-radius: 1px;
@@ -367,7 +359,6 @@ html, body {
 .editable-target:hover { outline: 1px dashed rgba(192,57,43,0.3); }
 .editable-target.selected { outline: 2px solid rgba(192,57,43,0.6) !important; }
 
-/* ─── 신문 헤더 ─── */
 .newspaper-header {
   text-align: center;
   border-bottom: 4px double var(--ink);
@@ -415,31 +406,20 @@ html, body {
   align-items: center;
   justify-content: center;
   font-size: 7px;
-  color: #666;
+  color: #888; /* 아이콘 기본 색상(회색) */
   flex-shrink: 0;
   font-family: 'Orbitron', sans-serif;
   letter-spacing: 1px;
   overflow: hidden;
   cursor: pointer;
-  background-size: cover;
-  background-position: center;
-  transition: border-color 0.2s;
-  position: relative;
+  transition: border-color 0.2s, background-color 0.2s;
 }
-.char-image-placeholder:hover { border-color: #888; }
-.char-image-placeholder:hover::after {
-  content: '↑';
-  position: absolute;
-  font-size: 18px;
-  color: rgba(255,255,255,0.7);
+.char-image-placeholder:hover { 
+  border-color: #888; 
+  background-color: #333;
 }
-.char-image-placeholder.has-image::after { display: none; }
-.char-image-placeholder.has-image:hover::after {
-  content: '↻';
-  display: flex;
-  position: absolute;
-  font-size: 16px;
-  color: rgba(255,255,255,0.8);
+.char-image-placeholder .material-icons {
+  font-size: 32px;
 }
 
 .char-name {
@@ -478,7 +458,6 @@ html, body {
   position: relative;
 }
 
-/* 씬 삭제 버튼 (캡처 시 숨김) */
 .scene-del-btn {
   position: absolute;
   top: 6px; right: 6px;
@@ -513,7 +492,6 @@ html, body {
 }
 .dialogue-block:last-of-type { margin-bottom: 0; }
 
-/* 대사 블록 삭제 버튼 */
 .dialogue-del-btn {
   position: absolute;
   right: -6px; top: 0;
@@ -546,7 +524,6 @@ html, body {
   text-align: justify;
 }
 
-/* + 대사 추가 버튼들 */
 .add-dialogue-btn {
   display: flex;
   align-items: center;
@@ -603,9 +580,9 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════
-   CROP MODAL — TWITTER STYLE
+   ICON MODAL
 ═══════════════════════════════════════════ */
-#crop-modal {
+#icon-modal {
   display: none;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -614,152 +591,46 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-#crop-modal.show {
+#icon-modal.show {
   display: flex;
 }
 
-.crop-container {
+.icon-container {
   background: var(--ui-bg);
   border: 1px solid var(--ui-border);
   border-radius: 4px;
   padding: 20px;
-  max-width: 500px;
+  max-width: 400px;
   width: 90%;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.crop-header {
+.icon-header {
   font-family: 'Orbitron', sans-serif;
   font-size: 12px;
   letter-spacing: 2px;
   color: var(--ui-text);
 }
 
-.crop-preview-wrapper {
-  position: relative;
+.icon-input {
   width: 100%;
-  height: 300px;
-  background: #0a0a0a;
-  border: 1px solid var(--ui-border);
-  overflow: hidden;
-  border-radius: 2px;
-}
-
-.crop-image-container {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-#crop-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  cursor: grab;
-  user-select: none;
-}
-
-#crop-image:active {
-  cursor: grabbing;
-}
-
-.crop-frame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 56px;
-  height: 56px;
-  border: 2px solid var(--ui-accent);
-  background: rgba(192,57,43,0.1);
-  box-shadow: 
-    inset 0 0 0 9999px rgba(0,0,0,0.5),
-    0 0 0 1px var(--ui-accent);
-  pointer-events: none;
-  z-index: 10;
-}
-
-.crop-instructions {
-  font-size: 10px;
-  color: #999;
-  text-align: center;
-  line-height: 1.5;
-}
-
-.crop-zoom-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
-}
-
-.crop-zoom-btn {
   background: #0a0a0a;
   border: 1px solid var(--ui-border);
   color: var(--ui-text);
-  font-family: 'Orbitron', sans-serif;
-  font-size: 10px;
-  letter-spacing: 1px;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, border-color 0.15s;
+  font-size: 12px;
+  padding: 10px;
+  outline: none;
+}
+.icon-input:focus {
+  border-color: var(--ui-accent);
 }
 
-.crop-zoom-btn:hover {
-  background: var(--ui-hover);
-  border-color: #444;
-}
-
-.crop-zoom-slider {
-  flex: 1;
-  max-width: 200px;
-}
-
-.crop-zoom-slider input {
-  width: 100%;
-  height: 4px;
-  cursor: pointer;
-  accent-color: var(--ui-accent);
-}
-
-.crop-controls {
+.icon-controls {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-}
-
-.crop-btn {
-  background: #0a0a0a;
-  border: 1px solid var(--ui-border);
-  color: var(--ui-text);
-  font-family: 'Orbitron', sans-serif;
-  font-size: 10px;
-  letter-spacing: 1px;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.crop-btn:hover {
-  background: var(--ui-hover);
-  border-color: #444;
-}
-
-.crop-btn.confirm {
-  background: var(--ui-accent);
-  border-color: var(--ui-accent);
-  color: #fff;
-}
-
-.crop-btn.confirm:hover {
-  background: #a93226;
 }
 
 /* ═══════════════════════════════════════════
@@ -790,7 +661,6 @@ html, body {
 #toast.ok { border-color: var(--ok); color: var(--ok); }
 #toast.err { border-color: var(--ui-accent); color: var(--ui-accent); }
 
-/* ─── scrollbar ─── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: #2a2a2a; }
@@ -799,9 +669,6 @@ html, body {
 </head>
 <body>
 
-<!-- ════════════════════════════════════════
-     TOPBAR
-════════════════════════════════════════ -->
 <div id="topbar">
   <div class="tb-logo">TDD</div>
 
@@ -852,44 +719,24 @@ html, body {
   <div id="selected-label">SELECTED:<span id="selected-name">—</span></div>
 </div>
 
-<!-- ════════════════════════════════════════
-     FONT PANEL
-════════════════════════════════════════ -->
 <div id="font-panel">
   <div class="fp-header">
     FONT REGISTRY
     <button class="fp-close" id="fp-close-btn">×</button>
   </div>
-
   <div class="fp-body">
-
-    <!-- 방식 A: CSS 붙여넣기 -->
     <div>
       <div class="fp-section-title">METHOD A — CSS CODE PASTE</div>
-      <p style="font-size:11px; color:#555; margin-bottom:10px; line-height:1.6;">
-        눈누·Google Fonts 등에서 제공하는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@font-face</code> 또는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@import</code> 코드를 붙여넣으세요. 기존 Google Fonts는 자동 반영됩니다.
+      <p style="font-size:11px; color:#aaa; margin-bottom:10px; line-height:1.6;">
+        눈누·Google Fonts 등에서 제공하는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@font-face</code> 또는 <code style="background:#1a1a1a;color:#a8d8a8;padding:1px 4px;font-size:10px;">@import</code> 코드를 붙여넣으세요.
       </p>
-      <textarea
-        id="css-input"
-        class="fp-textarea"
-        rows="5"
-        placeholder="@font-face {
-  font-family: '폰트이름';
-  src: url('https://...');
-}
-
-또는
-
-@import url('https://...');"
-      ></textarea>
+      <textarea id="css-input" class="fp-textarea" rows="5" placeholder="@font-face { ... }"></textarea>
       <div id="css-status" class="fp-status"></div>
       <button class="fp-apply-btn accent" id="css-apply-btn" style="margin-top:8px;">CSS 코드 적용 →</button>
     </div>
-
-    <!-- 방식 B: 파일 업로드 -->
     <div>
       <div class="fp-section-title">METHOD B — LOCAL FONT FILE</div>
-      <p style="font-size:11px; color:#555; margin-bottom:10px; line-height:1.6;">
+      <p style="font-size:11px; color:#aaa; margin-bottom:10px; line-height:1.6;">
         .ttf / .otf / .woff / .woff2 파일을 업로드하면 Base64로 변환되어 캡처 이미지에도 정확히 반영됩니다.
       </p>
       <div class="fp-upload-zone" id="font-dropzone">
@@ -902,225 +749,93 @@ html, body {
       <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" style="display:none;" multiple>
       <div id="file-status" class="fp-status"></div>
     </div>
-
-    <!-- 등록된 폰트 목록 -->
     <div>
       <div class="fp-section-title">REGISTERED FONTS</div>
-      <div class="fp-font-list" id="font-list">
-        <!-- JS로 채워짐 -->
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     CROP MODAL — TWITTER STYLE
-════════════════════════════════════════ -->
-<div id="crop-modal">
-  <div class="crop-container">
-    <div class="crop-header">이미지 크롭</div>
-    
-    <div class="crop-preview-wrapper">
-      <div class="crop-image-container" id="crop-image-container">
-        <img id="crop-image" src="" alt="crop">
-      </div>
-      <div class="crop-frame"></div>
-    </div>
-
-    <div class="crop-instructions">
-      드래그하여 이미지를 이동하고 줌 슬라이더로 크기를 조절하세요
-    </div>
-
-    <div class="crop-zoom-controls">
-      <button class="crop-zoom-btn" id="crop-zoom-out">−</button>
-      <div class="crop-zoom-slider">
-        <input type="range" id="crop-zoom" min="1" max="5" step="0.1" value="1">
-      </div>
-      <button class="crop-zoom-btn" id="crop-zoom-in">+</button>
-    </div>
-
-    <div class="crop-controls">
-      <button class="crop-btn" id="crop-cancel">취소</button>
-      <button class="crop-btn confirm" id="crop-confirm">완료</button>
+      <div class="fp-font-list" id="font-list"></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
-     CANVAS AREA
-════════════════════════════════════════ -->
+<div id="icon-modal">
+  <div class="icon-container">
+    <div class="icon-header">아이콘 설정</div>
+    <p style="font-size:11px; color:#bbb; margin-bottom:5px;">
+      Google Material Icons 이름을 영어로 입력하세요.<br>(예: person, face, account_circle, star)
+    </p>
+    <input type="text" id="icon-name-input" class="icon-input" placeholder="person">
+    <div class="icon-controls">
+      <button class="tb-btn" id="icon-cancel">취소</button>
+      <button class="tb-btn primary" id="icon-confirm">확인</button>
+    </div>
+  </div>
+</div>
+
 <div id="app">
 <div id="canvas-area">
-
 <div class="capture-area" id="capture-area">
 
-  <!-- 헤더 -->
   <header class="newspaper-header">
-    <h1 class="editable-target"
-        contenteditable="true"
-        data-placeholder="[영화/드라마 제목]"
-        data-label="제목"
-        style="font-family:'Orbitron',sans-serif;">BLADE RUNNER</h1>
+    <h1 class="editable-target" contenteditable="true" data-placeholder="[영화/드라마 제목]" data-label="제목" style="font-family:'Orbitron',sans-serif;">BLADE RUNNER</h1>
     <div class="header-meta">
-      <span class="editable-target"
-            contenteditable="true"
-            data-placeholder="FILE NO."
-            data-label="파일번호"
-            style="font-family:'Orbitron',sans-serif;">FILE NO. 001</span>
-      <span class="editable-target"
-            contenteditable="true"
-            data-placeholder="DIRECTED BY"
-            data-label="감독"
-            style="font-family:'Orbitron',sans-serif;">DIRECTED BY: RIDLEY SCOTT</span>
+      <span class="editable-target" contenteditable="true" data-placeholder="FILE NO." data-label="파일번호" style="font-family:'Orbitron',sans-serif;">FILE NO. 001</span>
+      <span class="editable-target" contenteditable="true" data-placeholder="DIRECTED BY" data-label="감독" style="font-family:'Orbitron',sans-serif;">DIRECTED BY: RIDLEY SCOTT</span>
     </div>
   </header>
 
-  <!-- 상단 캐릭터 카드 -->
   <figure class="char-card" id="char-top">
-    <div class="char-image-placeholder" data-char="top" title="클릭하여 이미지 업로드">PHOTO</div>
+    <div class="char-image-placeholder" data-char="top" title="클릭하여 아이콘 설정">ICON</div>
     <figcaption>
-      <div class="char-name editable-target"
-           contenteditable="true"
-           data-placeholder="이름"
-           data-label="캐릭터1 이름"
-           style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
-      <div class="char-info editable-target"
-           contenteditable="true"
-           data-placeholder="신상정보"
-           data-label="캐릭터1 정보"
-           style="font-family:'Noto Serif KR',serif;">REPLICANT / NEXUS-6 / MALE</div>
+      <div class="char-name editable-target" contenteditable="true" data-placeholder="이름" data-label="캐릭터1 이름" style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
+      <div class="char-info editable-target" contenteditable="true" data-placeholder="신상정보" data-label="캐릭터1 정보" style="font-family:'Noto Serif KR',serif;">REPLICANT / NEXUS-6 / MALE</div>
     </figcaption>
   </figure>
 
-  <!-- 대사 섹션 -->
   <section class="dialogue-section" id="dialogue-section">
-
     <article class="scene-group">
       <button class="scene-del-btn" title="씬 삭제">×</button>
-      <h2 class="scene-header editable-target"
-          contenteditable="true"
-          data-placeholder="[상황 제목]"
-          data-label="씬 제목"
-          style="font-family:'Orbitron',sans-serif;">TEARS IN RAIN</h2>
-
+      <h2 class="scene-header editable-target" contenteditable="true" data-placeholder="[상황 제목]" data-label="씬 제목" style="font-family:'Orbitron',sans-serif;">TEARS IN RAIN</h2>
       <div class="dialogue-block">
         <button class="dialogue-del-btn" title="대사 삭제">×</button>
-        <div class="speaker-name char-1-line editable-target"
-             contenteditable="true"
-             data-placeholder="화자"
-             data-label="화자명"
-             style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
-        <div class="speaker-line char-1-line editable-target"
-             contenteditable="true"
-             data-placeholder="대사를 입력하세요"
-             data-label="대사"
-             style="font-family:'Noto Serif KR',serif;">I've seen things you people wouldn't believe... Attack ships on fire off the shoulder of Orion... I watched C-beams glitter in the dark near the Tannhäuser Gate... All those moments will be lost in time, like tears in rain... Time to die.</div>
+        <div class="speaker-name char-1-line editable-target" contenteditable="true" data-placeholder="화자" data-label="화자명" style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
+        <div class="speaker-line char-1-line editable-target" contenteditable="true" data-placeholder="대사를 입력하세요" data-label="대사" style="font-family:'Noto Serif KR',serif;">I've seen things you people wouldn't believe... Attack ships on fire off the shoulder of Orion... I watched C-beams glitter in the dark near the Tannhäuser Gate... All those moments will be lost in time, like tears in rain... Time to die.</div>
       </div>
-
       <div class="dialogue-block">
         <button class="dialogue-del-btn" title="대사 삭제">×</button>
-        <div class="speaker-name char-2-line editable-target"
-             contenteditable="true"
-             data-placeholder="화자"
-             data-label="화자명"
-             style="font-family:'Orbitron',sans-serif;">RICK DECKARD</div>
-        <div class="speaker-line char-2-line editable-target"
-             contenteditable="true"
-             data-placeholder="대사를 입력하세요"
-             data-label="대사"
-             style="font-family:'Noto Serif KR',serif;">(Silent observation)</div>
+        <div class="speaker-name char-2-line editable-target" contenteditable="true" data-placeholder="화자" data-label="화자명" style="font-family:'Orbitron',sans-serif;">RICK DECKARD</div>
+        <div class="speaker-line char-2-line editable-target" contenteditable="true" data-placeholder="대사를 입력하세요" data-label="대사" style="font-family:'Noto Serif KR',serif;">(Silent observation)</div>
       </div>
-
-      <div class="dialogue-block">
-        <button class="dialogue-del-btn" title="대사 삭제">×</button>
-        <div class="speaker-name char-1-line editable-target"
-             contenteditable="true"
-             data-placeholder="화자"
-             data-label="화자명"
-             style="font-family:'Orbitron',sans-serif;">ROY BATTY</div>
-        <div class="speaker-line char-1-line editable-target"
-             contenteditable="true"
-             data-placeholder="대사를 입력하세요"
-             data-label="대사"
-             style="font-family:'Noto Serif KR',serif;">All those moments will be lost in time, like tears in rain... Time to die.</div>
-      </div>
-
       <button class="add-dialogue-btn">＋ 대사 추가</button>
     </article>
-
   </section>
 
-  <!-- 씬 추가 버튼 -->
   <button class="add-scene-btn" id="add-scene-btn-main">＋ 씬 블록 추가</button>
 
-  <!-- 하단 캐릭터 카드 -->
   <figure class="char-card char-card-bottom" id="char-bottom" style="margin-top:15px;">
-    <div class="char-image-placeholder" data-char="bottom" title="클릭하여 이미지 업로드">PHOTO</div>
+    <div class="char-image-placeholder" data-char="bottom" title="클릭하여 아이콘 설정">ICON</div>
     <figcaption>
-      <div class="char-name editable-target"
-           contenteditable="true"
-           data-placeholder="이름"
-           data-label="캐릭터2 이름"
-           style="font-family:'Orbitron',sans-serif;">RICK DECKARD</div>
-      <div class="char-info editable-target"
-           contenteditable="true"
-           data-placeholder="신상정보"
-           data-label="캐릭터2 정보"
-           style="font-family:'Noto Serif KR',serif;">BLADE RUNNER / LAPD / MALE</div>
+      <div class="char-name editable-target" contenteditable="true" data-placeholder="이름" data-label="캐릭터2 이름" style="font-family:'Orbitron',sans-serif;">RICK DECKARD</div>
+      <div class="char-info editable-target" contenteditable="true" data-placeholder="신상정보" data-label="캐릭터2 정보" style="font-family:'Noto Serif KR',serif;">BLADE RUNNER / LAPD / MALE</div>
     </figcaption>
   </figure>
 
-  <!-- 푸터 -->
   <footer class="main-footer">
-    <div class="editable-target"
-         contenteditable="true"
-         data-placeholder="출처 정보 (개봉 연도, 원작 등)"
-         data-label="출처"
-         style="font-family:'Orbitron',sans-serif;">RELEASED IN 1982</div>
-    <div class="stamp-logo editable-target"
-         contenteditable="true"
-         data-placeholder="스탬프 텍스트"
-         data-label="스탬프"
-         style="font-family:'Orbitron',sans-serif;">THE DAILY DIALOGUE</div>
+    <div class="editable-target" contenteditable="true" data-placeholder="출처 정보 (개봉 연도, 원작 등)" data-label="출처" style="font-family:'Orbitron',sans-serif;">RELEASED IN 1982</div>
+    <div class="stamp-logo editable-target" contenteditable="true" data-placeholder="스탬프 텍스트" data-label="스탬프" style="font-family:'Orbitron',sans-serif;">THE DAILY DIALOGUE</div>
   </footer>
 
-</div><!-- /capture-area -->
-</div><!-- /canvas-area -->
-</div><!-- /app -->
+</div>
+</div>
+</div>
 
-<!-- 이미지 업로드 인풋들 -->
-<input type="file" id="img-input-top" accept="image/*" style="display:none;">
-<input type="file" id="img-input-bottom" accept="image/*" style="display:none;">
-
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-/* ════════════════════════════════════════
-   STATE
-════════════════════════════════════════ */
 const state = {
   selectedEl: null,
   registeredFonts: [],
-  isComposing: false,
-  cropData: {
-    imageData: null,
-    char: null,
-    zoom: 1,
-    offsetX: 0,
-    offsetY: 0
-  },
-  cropDrag: {
-    isDragging: false,
-    startX: 0,
-    startY: 0
-  }
+  targetIconPlaceholder: null
 };
 
-/* ════════════════════════════════════════
-   BUILT-IN GOOGLE FONTS
-════════════════════════════════════════ */
 const BUILTIN_FONTS = [
   { name: 'Orbitron',        family: "'Orbitron', sans-serif" },
   { name: 'Noto Serif KR',   family: "'Noto Serif KR', serif" },
@@ -1134,9 +849,6 @@ const BUILTIN_FONTS = [
   { name: 'Playfair Display',family: "'Playfair Display', serif" },
 ];
 
-/* ════════════════════════════════════════
-   TOAST
-════════════════════════════════════════ */
 let toastTimer;
 function toast(msg, type = '') {
   const el = document.getElementById('toast');
@@ -1146,9 +858,6 @@ function toast(msg, type = '') {
   toastTimer = setTimeout(() => { el.className = ''; }, 2800);
 }
 
-/* ════════════════════════════════════════
-   FONT SELECT — 드롭다운 빌드
-════════════════════════════════════════ */
 function buildFontSelect() {
   const sel = document.getElementById('font-select');
   const prev = sel.value;
@@ -1182,236 +891,88 @@ function buildFontSelect() {
     });
     sel.appendChild(grp2);
   }
-
   if (prev) sel.value = prev;
 }
 
-/* ════════════════════════════════════════
-   ELEMENT SELECTION
-════════════════════════════════════════ */
 document.getElementById('capture-area').addEventListener('click', e => {
   const target = e.target.closest('.editable-target');
   if (!target) return;
-
   document.querySelectorAll('.editable-target.selected').forEach(el => el.classList.remove('selected'));
-
   state.selectedEl = target;
   target.classList.add('selected');
-
   buildFontSelect();
   updateSelectedLabel();
 });
 
 function updateSelectedLabel() {
   const label = document.getElementById('selected-name');
-  if (!state.selectedEl) {
-    label.textContent = '—';
-  } else {
-    label.textContent = state.selectedEl.dataset.label || '—';
-  }
+  label.textContent = state.selectedEl ? (state.selectedEl.dataset.label || '—') : '—';
 }
 
-/* ════════════════════════════════════════
-   FONT CHANGE
-════════════════════════════════════════ */
 document.getElementById('font-select').addEventListener('change', e => {
   if (!state.selectedEl) return;
   state.selectedEl.style.fontFamily = e.target.value;
 });
 
 /* ════════════════════════════════════════
-   CROP MODAL — TWITTER STYLE
+   ICON INSERTION
 ════════════════════════════════════════ */
-function openCropModal(char, imageData) {
-  state.cropData.imageData = imageData;
-  state.cropData.char = char;
-  state.cropData.zoom = 1;
-  state.cropData.offsetX = 0;
-  state.cropData.offsetY = 0;
-
-  const cropImage = document.getElementById('crop-image');
-  cropImage.src = imageData;
-  
-  const zoomSlider = document.getElementById('crop-zoom');
-  zoomSlider.value = 1;
-  
-  document.getElementById('crop-modal').classList.add('show');
-}
-
-function closeCropModal() {
-  document.getElementById('crop-modal').classList.remove('show');
-  state.cropData.imageData = null;
-  state.cropData.char = null;
-}
-
-function updateCropImage() {
-  const img = document.getElementById('crop-image');
-  const container = document.getElementById('crop-image-container');
-  
-  img.style.transform = `translate(${state.cropData.offsetX}px, ${state.cropData.offsetY}px) scale(${state.cropData.zoom})`;
-}
-
-function applyCrop() {
-  const container = document.getElementById('crop-image-container');
-  const frame = document.querySelector('.crop-frame');
-  
-  const frameRect = frame.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  
-  const x = frameRect.left - containerRect.left;
-  const y = frameRect.top - containerRect.top;
-  const size = 56;
-
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-
-  const img = new Image();
-  img.onload = () => {
-    ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
-    const croppedImage = canvas.toDataURL();
-    
-    const placeholder = document.querySelector(`.char-image-placeholder[data-char="${state.cropData.char}"]`);
-    placeholder.style.backgroundImage = `url('${croppedImage}')`;
-    placeholder.classList.add('has-image');
-    placeholder.textContent = '';
-
-    closeCropModal();
-    toast('이미지가 적용되었습니다', 'ok');
-  };
-  img.src = state.cropData.imageData;
-}
-
-/* ════════════════════════════════════════
-   CROP IMAGE INTERACTION
-════════════════════════════════════════ */
-const cropImageContainer = document.getElementById('crop-image-container');
-const cropImage = document.getElementById('crop-image');
-
-cropImageContainer.addEventListener('mousedown', (e) => {
-  state.cropDrag.isDragging = true;
-  state.cropDrag.startX = e.clientX - state.cropData.offsetX;
-  state.cropDrag.startY = e.clientY - state.cropData.offsetY;
-});
-
-document.addEventListener('mousemove', (e) => {
-  if (!state.cropDrag.isDragging) return;
-  
-  state.cropData.offsetX = e.clientX - state.cropDrag.startX;
-  state.cropData.offsetY = e.clientY - state.cropDrag.startY;
-  updateCropImage();
-});
-
-document.addEventListener('mouseup', () => {
-  state.cropDrag.isDragging = false;
-});
-
-/* ════════════════════════════════════════
-   CROP ZOOM CONTROLS
-════════════════════════════════════════ */
-const zoomSlider = document.getElementById('crop-zoom');
-const zoomInBtn = document.getElementById('crop-zoom-in');
-const zoomOutBtn = document.getElementById('crop-zoom-out');
-
-zoomSlider.addEventListener('input', (e) => {
-  state.cropData.zoom = parseFloat(e.target.value);
-  updateCropImage();
-});
-
-zoomInBtn.addEventListener('click', () => {
-  state.cropData.zoom = Math.min(5, state.cropData.zoom + 0.2);
-  zoomSlider.value = state.cropData.zoom;
-  updateCropImage();
-});
-
-zoomOutBtn.addEventListener('click', () => {
-  state.cropData.zoom = Math.max(1, state.cropData.zoom - 0.2);
-  zoomSlider.value = state.cropData.zoom;
-  updateCropImage();
-});
-
-document.getElementById('crop-confirm').addEventListener('click', applyCrop);
-document.getElementById('crop-cancel').addEventListener('click', closeCropModal);
-
-/* ════════════════════════════════════════
-   CHARACTER IMAGE UPLOAD
-════════════════════════════════════════ */
-function setupImageUpload() {
+function setupIconInsertion() {
   const placeholders = document.querySelectorAll('.char-image-placeholder');
-  
   placeholders.forEach(ph => {
-    ph.addEventListener('click', () => {
-      const char = ph.dataset.char;
-      const inputId = `img-input-${char}`;
-      document.getElementById(inputId).click();
-    });
-  });
-
-  ['top', 'bottom'].forEach(char => {
-    document.getElementById(`img-input-${char}`).addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        openCropModal(char, evt.target.result);
-      };
-      reader.readAsDataURL(file);
+    // 기존 이벤트 리스너가 쌓이지 않도록 복제하여 교체
+    const newPh = ph.cloneNode(true);
+    ph.replaceWith(newPh);
+    newPh.addEventListener('click', () => {
+      state.targetIconPlaceholder = newPh;
+      document.getElementById('icon-name-input').value = '';
+      document.getElementById('icon-modal').classList.add('show');
+      document.getElementById('icon-name-input').focus();
     });
   });
 }
 
-/* ════════════════════════════════════════
-   ADD SCENE
-════════════════════════════════════════ */
+document.getElementById('icon-cancel').addEventListener('click', () => {
+  document.getElementById('icon-modal').classList.remove('show');
+  state.targetIconPlaceholder = null;
+});
+
+document.getElementById('icon-confirm').addEventListener('click', () => {
+  const iconName = document.getElementById('icon-name-input').value.trim();
+  if (state.targetIconPlaceholder && iconName) {
+    state.targetIconPlaceholder.innerHTML = `<span class="material-icons">${iconName}</span>`;
+    toast('아이콘이 적용되었습니다', 'ok');
+  }
+  document.getElementById('icon-modal').classList.remove('show');
+  state.targetIconPlaceholder = null;
+});
+
 function createSceneBlock() {
   const template = `
     <article class="scene-group">
       <button class="scene-del-btn" title="씬 삭제">×</button>
-      <h2 class="scene-header editable-target"
-          contenteditable="true"
-          data-placeholder="[상황 제목]"
-          data-label="씬 제목"
-          style="font-family:'Orbitron',sans-serif;">NEW SCENE</h2>
-
+      <h2 class="scene-header editable-target" contenteditable="true" data-placeholder="[상황 제목]" data-label="씬 제목" style="font-family:'Orbitron',sans-serif;">NEW SCENE</h2>
       <div class="dialogue-block">
         <button class="dialogue-del-btn" title="대사 삭제">×</button>
-        <div class="speaker-name char-1-line editable-target"
-             contenteditable="true"
-             data-placeholder="화자"
-             data-label="화자명"
-             style="font-family:'Orbitron',sans-serif;">SPEAKER 1</div>
-        <div class="speaker-line char-1-line editable-target"
-             contenteditable="true"
-             data-placeholder="대사를 입력하세요"
-             data-label="대사"
-             style="font-family:'Noto Serif KR',serif;">대사를 입력하세요</div>
+        <div class="speaker-name char-1-line editable-target" contenteditable="true" data-placeholder="화자" data-label="화자명" style="font-family:'Orbitron',sans-serif;">SPEAKER 1</div>
+        <div class="speaker-line char-1-line editable-target" contenteditable="true" data-placeholder="대사를 입력하세요" data-label="대사" style="font-family:'Noto Serif KR',serif;">대사를 입력하세요</div>
       </div>
-
       <button class="add-dialogue-btn">＋ 대사 추가</button>
     </article>
   `;
-  
   const section = document.getElementById('dialogue-section');
   const div = document.createElement('div');
   div.innerHTML = template;
   section.appendChild(div.firstElementChild);
-  
   attachEventListeners();
 }
 
-/* ════════════════════════════════════════
-   ADD DIALOGUE
-════════════════════════════════════════ */
 function attachEventListeners() {
   document.querySelectorAll('.scene-del-btn').forEach(btn => {
     btn.replaceWith(btn.cloneNode(true));
   });
   document.querySelectorAll('.scene-del-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      btn.closest('.scene-group').remove();
-    });
+    btn.addEventListener('click', () => btn.closest('.scene-group').remove());
   });
 
   document.querySelectorAll('.add-dialogue-btn').forEach(btn => {
@@ -1424,16 +985,8 @@ function attachEventListeners() {
       const newDialogue = `
         <div class="dialogue-block">
           <button class="dialogue-del-btn" title="대사 삭제">×</button>
-          <div class="speaker-name char-1-line editable-target"
-               contenteditable="true"
-               data-placeholder="화자"
-               data-label="화자명"
-               style="font-family:'Orbitron',sans-serif;">NEW SPEAKER</div>
-          <div class="speaker-line char-1-line editable-target"
-               contenteditable="true"
-               data-placeholder="대사를 입력하세요"
-               data-label="대사"
-               style="font-family:'Noto Serif KR',serif;">새 대사</div>
+          <div class="speaker-name char-1-line editable-target" contenteditable="true" data-placeholder="화자" data-label="화자명" style="font-family:'Orbitron',sans-serif;">NEW SPEAKER</div>
+          <div class="speaker-line char-1-line editable-target" contenteditable="true" data-placeholder="대사를 입력하세요" data-label="대사" style="font-family:'Noto Serif KR',serif;">새 대사</div>
         </div>
       `;
       const div = document.createElement('div');
@@ -1447,15 +1000,10 @@ function attachEventListeners() {
     btn.replaceWith(btn.cloneNode(true));
   });
   document.querySelectorAll('.dialogue-del-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      btn.closest('.dialogue-block').remove();
-    });
+    btn.addEventListener('click', () => btn.closest('.dialogue-block').remove());
   });
 }
 
-/* ════════════════════════════════════════
-   TOPBAR BUTTONS
-════════════════════════════════════════ */
 document.getElementById('btn-add-scene').addEventListener('click', createSceneBlock);
 
 document.getElementById('btn-save').addEventListener('click', () => {
@@ -1473,19 +1021,16 @@ document.getElementById('btn-load').addEventListener('click', () => {
   }
   document.getElementById('capture-area').innerHTML = html;
   attachEventListeners();
-  setupImageUpload();
+  setupIconInsertion();
   toast('불러왔습니다', 'ok');
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-  if (confirm('정말 초기화하시겠습니까?')) {
-    location.reload();
-  }
+  if (confirm('정말 초기화하시겠습니까?')) location.reload();
 });
 
 document.getElementById('btn-font-panel').addEventListener('click', () => {
-  const panel = document.getElementById('font-panel');
-  panel.classList.toggle('open');
+  document.getElementById('font-panel').classList.toggle('open');
   document.getElementById('app').classList.toggle('panel-open');
 });
 
@@ -1494,9 +1039,6 @@ document.getElementById('fp-close-btn').addEventListener('click', () => {
   document.getElementById('app').classList.remove('panel-open');
 });
 
-/* ════════════════════════════════════════
-   FONT PANEL — CSS CODE PASTE
-════════════════════════════════════════ */
 document.getElementById('css-apply-btn').addEventListener('click', () => {
   const code = document.getElementById('css-input').value.trim();
   if (!code) {
@@ -1504,7 +1046,6 @@ document.getElementById('css-apply-btn').addEventListener('click', () => {
     document.getElementById('css-status').className = 'fp-status err';
     return;
   }
-
   const styleEl = document.createElement('style');
   styleEl.textContent = code;
   document.head.appendChild(styleEl);
@@ -1518,42 +1059,24 @@ document.getElementById('css-apply-btn').addEventListener('click', () => {
       }
     });
   }
-
   buildFontSelect();
   updateFontList();
-
   document.getElementById('css-status').textContent = '✓ CSS 코드가 적용되었습니다';
   document.getElementById('css-status').className = 'fp-status ok';
   document.getElementById('css-input').value = '';
-
-  setTimeout(() => {
-    document.getElementById('css-status').className = 'fp-status';
-  }, 3000);
+  setTimeout(() => { document.getElementById('css-status').className = 'fp-status'; }, 3000);
 });
 
-/* ════════════════════════════════════════
-   FONT PANEL — FILE UPLOAD
-════════════════════════════════════════ */
 const dropzone = document.getElementById('font-dropzone');
-dropzone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropzone.classList.add('dragover');
-});
-dropzone.addEventListener('dragleave', () => {
-  dropzone.classList.remove('dragover');
-});
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
 dropzone.addEventListener('drop', e => {
   e.preventDefault();
   dropzone.classList.remove('dragover');
   handleFontFiles(e.dataTransfer.files);
 });
-dropzone.addEventListener('click', () => {
-  document.getElementById('font-file-input').click();
-});
-
-document.getElementById('font-file-input').addEventListener('change', e => {
-  handleFontFiles(e.target.files);
-});
+dropzone.addEventListener('click', () => document.getElementById('font-file-input').click());
+document.getElementById('font-file-input').addEventListener('change', e => handleFontFiles(e.target.files));
 
 function handleFontFiles(files) {
   Array.from(files).forEach(file => {
@@ -1561,13 +1084,7 @@ function handleFontFiles(files) {
     reader.onload = (evt) => {
       const dataUrl = evt.target.result;
       const name = file.name.replace(/\.[^/.]+$/, '');
-      
-      const fontFace = `@font-face {
-  font-family: '${name}';
-  src: url('${dataUrl}') format('${getFormat(file.name)}');
-  font-display: swap;
-}`;
-      
+      const fontFace = `@font-face { font-family: '${name}'; src: url('${dataUrl}') format('${getFormat(file.name)}'); font-display: swap; }`;
       const styleEl = document.createElement('style');
       styleEl.textContent = fontFace;
       document.head.appendChild(styleEl);
@@ -1575,18 +1092,14 @@ function handleFontFiles(files) {
       if (!state.registeredFonts.some(f => f.name === name)) {
         state.registeredFonts.push({ name, source: 'file' });
       }
-
       buildFontSelect();
       updateFontList();
     };
     reader.readAsDataURL(file);
   });
-
   document.getElementById('file-status').textContent = `✓ ${files.length}개 파일 로드됨`;
   document.getElementById('file-status').className = 'fp-status ok';
-  setTimeout(() => {
-    document.getElementById('file-status').className = 'fp-status';
-  }, 3000);
+  setTimeout(() => { document.getElementById('file-status').className = 'fp-status'; }, 3000);
 }
 
 function getFormat(filename) {
@@ -1595,13 +1108,9 @@ function getFormat(filename) {
   return formats[ext] || 'truetype';
 }
 
-/* ════════════════════════════════════════
-   FONT PANEL — FONT LIST
-════════════════════════════════════════ */
 function updateFontList() {
   const list = document.getElementById('font-list');
   list.innerHTML = '';
-
   state.registeredFonts.forEach(font => {
     const item = document.createElement('div');
     item.className = 'fp-font-item';
@@ -1611,7 +1120,6 @@ function updateFontList() {
       <button class="fp-font-del" title="삭제">×</button>
     `;
     list.appendChild(item);
-
     item.querySelector('.fp-font-del').addEventListener('click', () => {
       state.registeredFonts = state.registeredFonts.filter(f => f.name !== font.name);
       updateFontList();
@@ -1620,18 +1128,45 @@ function updateFontList() {
   });
 }
 
-/* ════════════════════════════════════════
-   DOWNLOAD PNG
-════════════════════════════════════════ */
-document.getElementById('btn-download').addEventListener('click', () => {
+document.getElementById('btn-download').addEventListener('click', async () => {
   const captureArea = document.getElementById('capture-area');
-  
-  document.querySelectorAll('.editable-target').forEach(el => {
-    el.classList.remove('selected');
-  });
-  document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => {
-    el.style.display = 'none';
-  });
+  document.querySelectorAll('.editable-target').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => el.style.display = 'none');
+
+  // Google Fonts를 Base64로 인라인 embed하여 캡처 이미지에 폰트가 정확히 반영되도록 처리
+  let inlineStyleEl = null;
+  try {
+    const gfLink = document.getElementById('gf-link');
+    if (gfLink && gfLink.href) {
+      const cssResp = await fetch(gfLink.href);
+      let cssText = await cssResp.text();
+
+      // CSS 내 url() 폰트 파일을 Base64로 치환
+      const urlMatches = [...cssText.matchAll(/url\((https?:\/\/[^)]+)\)/g)];
+      await Promise.all(urlMatches.map(async (m) => {
+        try {
+          const fontResp = await fetch(m[1]);
+          const blob = await fontResp.blob();
+          const b64 = await new Promise(res => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(blob);
+          });
+          cssText = cssText.replace(m[0], `url(${b64})`);
+        } catch(e) { /* 개별 폰트 실패 시 스킵 */ }
+      }));
+
+      inlineStyleEl = document.createElement('style');
+      inlineStyleEl.id = 'gf-inline-embed';
+      inlineStyleEl.textContent = cssText;
+      document.head.appendChild(inlineStyleEl);
+    }
+  } catch(e) {
+    console.warn('Google Fonts 인라인 처리 실패, 기본 캡처 진행:', e);
+  }
+
+  // 폰트 렌더링 안정화를 위해 잠시 대기
+  await new Promise(r => setTimeout(r, 300));
 
   domtoimage.toPng(captureArea)
     .then(image => {
@@ -1646,16 +1181,12 @@ document.getElementById('btn-download').addEventListener('click', () => {
       toast('다운로드 실패', 'err');
     })
     .finally(() => {
-      document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => {
-        el.style.display = '';
-      });
+      document.querySelectorAll('.scene-del-btn, .dialogue-del-btn, .add-dialogue-btn, .add-scene-btn').forEach(el => el.style.display = '');
+      if (inlineStyleEl) inlineStyleEl.remove();
     });
 });
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
-setupImageUpload();
+setupIconInsertion();
 attachEventListeners();
 buildFontSelect();
 </script>
